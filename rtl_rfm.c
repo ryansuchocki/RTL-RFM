@@ -1,17 +1,16 @@
 // rtl_rfm: FSK1200 Decoder
 // R. Suchocki
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <ctype.h>
-#include <stdbool.h>
-
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
-#include <math.h>
 #include <string.h>
-
+#include <math.h>
+#include <time.h>
+#include <signal.h>
 #include <errno.h>
 extern int errno;
 
@@ -23,7 +22,7 @@ int gain = 50;
 int ppm = 43;
 
 int baudrate = 4800;
-int samplerate = /*31200;*/ 38400; /*19200*/; // multiple of baudrate
+int samplerate = /*31200;*/ /*19200;*/ 38400; // multiple of baudrate
 int windowsize;
 int fc; // Fc = mavg filter curoff frequency. Aim for baud/10
 int fc2;
@@ -39,7 +38,7 @@ int32_t mavg;
 void init() {
 	//samplerate = baudrate * windowsize;
 	windowsize = samplerate / baudrate;
-	fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16
+	fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16?
 	filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 
 	fc2 = baudrate * 2;
@@ -48,13 +47,19 @@ void init() {
 
 	//filter2size = 10; // temp. calcuate properly. baud rate * 2?
 
-	if (!quiet) printf(">> Setting lowpass at %iHz (filter size: %i, filter2 size: %i, window size: %i)\n", fc, filtersize, filter2size, windowsize);
+	if (!quiet) printf(">> Setting filters at '%iHz < signal < %iHz' (hipass size: %i, lopass size: %i, window size: %i)\n", fc, fc2, filtersize, filter2size, windowsize);
 
 	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
 	filter = malloc(sizeof(int16_t) * filtersize);
 	filter2 = malloc(sizeof(int16_t) * filter2size);
 	mavgbuffer = malloc(sizeof(int16_t) * windowsize);
+}
+
+void cleanup() {
+	free(filter);
+	free(filter2);
+	free(mavgbuffer);
 }
 
 // START OF HIGHPASS FILTER
@@ -96,6 +101,8 @@ void lopass_init() {
 }
 
 int16_t lopass(int16_t sample) {
+
+	if (filter2size < 2) return sample;
 
 	f2i = (f2i + 1) % filter2size;
 
@@ -218,9 +225,18 @@ void process_byte(uint8_t thebyte) {
 	}
 }
 
-void process_bit(uint8_t thebit) {
+
+int energy = 0;
+int energybuf[16];
+int ebi = 0;
+
+static inline void clocktick() {
+	if (debugplot) putchar('C'); 
+
+	uint8_t thebit = (mavg > 0) ? 1 : 0; // take the sign of the moving average window. Effectively a low pass with binary threshold...
+
 	static uint8_t thisbyte = 0;
-	static uint16_t amble = 0;
+	static uint32_t amble = 0;
 
 	if (bitphase >= 0) {
 		thisbyte = (thisbyte << 1) | (thebit & 0b1);
@@ -236,14 +252,13 @@ void process_bit(uint8_t thebit) {
 	if (bitphase < 0) {
 		amble = (amble << 1) | (thebit & 0b1);
 
-		if (amble == 0x2D4C) {
+		if ((amble & 0x00FFFFFF) == 0x00AA2D4C) { // detect 1 preamble bytes followed by 2 sync bytes
 			offsethold = latestoffset;
 			hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
 			float theoffset = latestoffset * (samplerate / 32768.0) / 1000;
-			float thedeviation = (((mavg < 0) ? -1*mavg : mavg) / windowsize) * (samplerate / 32768.0) / 1000;
-			if (!quiet) printf(" (OFFSET %.2fkHz) (MEAN DEVIATION %.2fkHz) ", theoffset, thedeviation);
+			if (!quiet) printf(" (OFFSET %.2fkHz) (ENERGY %.2f) ", theoffset, (float) (energy/16) * (samplerate / 32768.0) / 1000);
 
 			packet_bi = 0;
 			bitphase = 0;
@@ -253,16 +268,18 @@ void process_bit(uint8_t thebit) {
 			bytesexpected = -1; // tell the above section to expect length byte
 		}
 	}
+
+	ebi = (ebi + 1) % 16;
+	energy -= energybuf[ebi];
+	energybuf[ebi] = (((mavg < 0) ? -1*mavg : mavg) / windowsize);
+	energy += energybuf[ebi];
 }
 
-static inline void clocktick() {
-	if (debugplot) putchar('C'); 
+static volatile int run = 1;
 
-	uint8_t thebit = (mavg > 0) ? 1 : 0; // take the sign of the moving average window. Effectively a low pass with binary threshold...
-
-	process_bit(thebit);
+void intHandler(int dummy) {
+    run = 0;
 }
-
 
 void mainloop() {
 	#define CLKPERIOD windowsize
@@ -270,13 +287,7 @@ void mainloop() {
 	int16_t thissample = 0;
 	int16_t prevsample = 0;
 
-	while( rtlfm && !feof(rtlfm) ) {
-
-		/*while (!feof(stdin)) {
-			uint8_t b1 = fgetc(stdin);
-
-			if (b1 == 'c') return;
-		}*/
+	while( run && rtlfm && !feof(rtlfm) ) {
 
 		clk = (clk + 1) % CLKPERIOD;
 
@@ -317,7 +328,6 @@ void mainloop() {
 }
 
 int main (int argc, char **argv) {
-	init();
 
 	int c;
 
@@ -346,6 +356,10 @@ int main (int argc, char **argv) {
 			exit(EXIT_FAILURE);
 	}
 
+	signal(SIGINT, intHandler);
+
+	init();
+
 	hipass_init();
 	lopass_init();
 	moving_average_init();
@@ -358,6 +372,8 @@ int main (int argc, char **argv) {
 	if (!rtlfm) rtlfm = popen(cmdstring, "r");
 
 	mainloop();
+
+	cleanup();
 
 	if (!quiet) printf("\n>> RTL_FM FINISHED. GoodBye!\n");
 
