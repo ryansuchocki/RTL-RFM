@@ -10,8 +10,10 @@
 #include <stdint.h>
 #include <time.h>
 #include <math.h>
-#include <errno.h>
 #include <string.h>
+
+#include <errno.h>
+extern int errno;
 
 FILE *rtlfm = NULL;
 bool quiet = false;
@@ -20,8 +22,8 @@ int freq = 869412500;
 int gain = 50;
 int ppm = 43;
 
-int baudrate = 1200;
-int samplerate = /*31200;*/ 28800; /*19200*/; // multiple of baudrate
+int baudrate = 4800;
+int samplerate = /*31200;*/ 38400; /*19200*/; // multiple of baudrate
 int windowsize;
 int fc; // Fc = mavg filter curoff frequency. Aim for baud/10
 int fc2;
@@ -42,8 +44,9 @@ void init() {
 
 	fc2 = baudrate * 2;
 	filter2size = (0.443 * samplerate) / fc2;
+	filter2size = (filter2size < 1) ? 1 : filter2size;
 
-	filter2size = 10; // temp. calcuate properly. baud rate * 2?
+	//filter2size = 10; // temp. calcuate properly. baud rate * 2?
 
 	if (!quiet) printf(">> Setting lowpass at %iHz (filter size: %i, filter2 size: %i, window size: %i)\n", fc, filtersize, filter2size, windowsize);
 
@@ -252,7 +255,7 @@ void process_bit(uint8_t thebit) {
 	}
 }
 
-void clocktick() {
+static inline void clocktick() {
 	if (debugplot) putchar('C'); 
 
 	uint8_t thebit = (mavg > 0) ? 1 : 0; // take the sign of the moving average window. Effectively a low pass with binary threshold...
@@ -260,58 +263,20 @@ void clocktick() {
 	process_bit(thebit);
 }
 
-extern int errno;
 
-int main (int argc, char **argv) {
-	init();
-
-	int c;
-
-	char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
-			"\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
-			"Option flags:\n"
-			"  -h    Show this message\n"
-			"  -s    Read input from stdin\n"
-			"  -q    Quiet. Only output good messages\n"
-			"  -d    Show Debug Plot\n"
-			"  -f    Frequency [869412500]\n"
-			"  -g    Gain [50]\n"
-			"  -p    PPM error [47]\n";
-
-	while ((c = getopt(argc, argv, "hsqdf:g:p:")) != -1)
-	switch (c)	{
-		case 'h':	fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
-		case 's':	rtlfm = stdin;										break;
-		case 'q':	quiet = true;										break;
-		case 'd':	debugplot = true;									break;
-		case 'f':	freq = atoi(optarg);								break;
-		case 'g':	gain = atoi(optarg);								break;
-		case 'p':	ppm = atoi(optarg);									break;
-		case '?':
-		default:
-			exit(EXIT_FAILURE);
-	}
-
-	hipass_init();
-	lopass_init();
-	moving_average_init();
-	
+void mainloop() {
 	#define CLKPERIOD windowsize
 	int clk = 1;
-
-	int doplot = 0;
-
 	int16_t thissample = 0;
 	int16_t prevsample = 0;
 
-	char cmdstring[128];
-
-	sprintf(cmdstring, "rtl_fm -f %i -g %i -p %i -s %i -F 9 - %s", freq, gain, ppm, samplerate, (quiet? "2>/dev/null" : "")); /*-A fast*/
-
-	if (!quiet) printf(">> STARTING RTL_FM ...\n\n");
-	if (!rtlfm) rtlfm = popen(cmdstring, "r");
-
 	while( rtlfm && !feof(rtlfm) ) {
+
+		/*while (!feof(stdin)) {
+			uint8_t b1 = fgetc(stdin);
+
+			if (b1 == 'c') return;
+		}*/
 
 		clk = (clk + 1) % CLKPERIOD;
 
@@ -349,7 +314,50 @@ int main (int argc, char **argv) {
 		if (debugplot) putchar('\n');
 
 	}
+}
 
+int main (int argc, char **argv) {
+	init();
+
+	int c;
+
+	char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
+			"\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
+			"Option flags:\n"
+			"  -h    Show this message\n"
+			"  -s    Read input from stdin\n"
+			"  -q    Quiet. Only output good messages\n"
+			"  -d    Show Debug Plot\n"
+			"  -f    Frequency [869412500]\n"
+			"  -g    Gain [50]\n"
+			"  -p    PPM error [47]\n";
+
+	while ((c = getopt(argc, argv, "hsqdf:g:p:")) != -1)
+	switch (c)	{
+		case 'h':	fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
+		case 's':	rtlfm = stdin;										break;
+		case 'q':	quiet = true;										break;
+		case 'd':	debugplot = true;									break;
+		case 'f':	freq = atoi(optarg);								break;
+		case 'g':	gain = atoi(optarg);								break;
+		case 'p':	ppm = atoi(optarg);									break;
+		case '?':
+		default:
+			exit(EXIT_FAILURE);
+	}
+
+	hipass_init();
+	lopass_init();
+	moving_average_init();
+
+	char cmdstring[128];
+
+	sprintf(cmdstring, "rtl_fm -f %i -g %i -p %i -s %i -F 9 - %s", freq, gain, ppm, samplerate, (quiet? "2>/dev/null" : "")); /*-A fast*/
+
+	if (!quiet) printf(">> STARTING RTL_FM ...\n\n");
+	if (!rtlfm) rtlfm = popen(cmdstring, "r");
+
+	mainloop();
 
 	if (!quiet) printf("\n>> RTL_FM FINISHED. GoodBye!\n");
 
