@@ -34,8 +34,8 @@ static inline int16_t abs16(int16_t value) {
 #define TURN_7_8TH TAU*-1/8
 
 static inline int16_t atan2_int16(int16_t y, int16_t x) {
-    const int16_t absy = abs16(y);
-    const int16_t absx = abs16(x);
+    int16_t absy = abs16(y);
+    int16_t absx = abs16(x);
 
     int32_t denom = absy + absx;
     if (denom == 0) return 0; // avoid DBZ and skip rest of function

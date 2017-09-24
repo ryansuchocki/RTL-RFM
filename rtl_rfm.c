@@ -74,19 +74,23 @@ int main (int argc, char **argv) {
 
 	if (!rtlstream) rtlstream = popen(cmdstring, "r");
 
-	while( run && rtlstream && !feof(rtlstream) ) {
+	if (!rtlstream) {
+		printf("\n>> ERROR\n");
+	} else {
+		while( run && !feof(rtlstream) ) {
 
-		int8_t i = ((uint8_t) fgetc(rtlstream)) - 128;
-		int8_t q = ((uint8_t) fgetc(rtlstream)) - 128;
+			int8_t i = ((uint8_t) fgetc(rtlstream)) - 128;
+			int8_t q = ((uint8_t) fgetc(rtlstream)) - 128;
 
-		if (downsampler(i, q)) {
-			int8_t di = getI();
-			int8_t dq = getQ();
+			if (downsampler(i, q)) {
+				int8_t di = getI();
+				int8_t dq = getQ();
 
-			int16_t fm = fm_demod(di, dq);
+				int16_t fm = fm_demod(di, dq);
 
-			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) rfm_decode(bit);
+				int8_t bit = fsk_decode(fm, fm_magnitude);
+				if (bit >= 0) rfm_decode(bit);
+			}
 		}
 	}
 

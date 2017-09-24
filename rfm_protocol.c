@@ -89,7 +89,7 @@ void process_byte(uint8_t thebyte) {
 
 
 void rfm_decode(uint8_t thebit) {
-	if (debugplot) putchar('C'); 
+	//if (debugplot) putchar('C'); 
 
 	static uint8_t thisbyte = 0;
 	static uint32_t amble = 0;
