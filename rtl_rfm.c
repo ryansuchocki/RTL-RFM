@@ -133,7 +133,7 @@ void *readerThreadEntryPoint(void *arg) {
 
 static void sighandler(int signum) {
 	if (signum == SIGINT) {
-		fprintf(stderr, "received SIGINT\n");
+		fprintf(stderr, "\n >> Received SIGINT\n");
 		run = 0;
 	}    
 }
@@ -187,14 +187,10 @@ int main (int argc, char **argv) {
         pthread_mutex_lock(&data_mutex);
     }
 
-    fprintf(stderr, "Shutting Down");
+    fprintf(stderr, "\n>> Shutting Down!\n");
 
     rtlsdr_cancel_async(dev);
-
-    fprintf(stderr, "Shutting Down2");
-
 	rtlsdr_close(dev);
-	fprintf(stderr, "Shutting Down3");
 
 
 
@@ -203,7 +199,9 @@ int main (int argc, char **argv) {
 
 
 
-	fsk_init();
+
+
+	//fsk_init();
 
 	//char cmdstring[128];
 
@@ -233,7 +231,7 @@ int main (int argc, char **argv) {
 	// 	}
 	// }
 
-	fsk_cleanup();
+	//fsk_cleanup();
 
 	if (!quiet) printf("\n>> RTL_FM FINISHED. GoodBye!\n");
 
