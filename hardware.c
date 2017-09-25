@@ -61,7 +61,8 @@ int hardware_init() {
         fprintf(stderr, "Using automatic gain control.\n");
     }
     rtlsdr_set_freq_correction(dev, ppm);
-    //if (Modes.enable_agc) rtlsdr_set_agc_mode(dev, 1);
+    
+    rtlsdr_set_agc_mode(dev, 0);
     rtlsdr_set_center_freq(dev, freq);
     rtlsdr_set_sample_rate(dev, BIGSAMPLERATE);
     rtlsdr_reset_buffer(dev);
