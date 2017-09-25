@@ -92,7 +92,7 @@ static int setup_hardware() {
 pthread_t reader_thread;
 pthread_mutex_t data_mutex;     /* Mutex to synchronize buffer access. */
 pthread_cond_t data_cond;       /* Conditional variable associated. */
-unsigned char data [1024];            /* Raw IQ samples buffer */
+unsigned char data [262144];            /* Raw IQ samples buffer */
 uint32_t data_len;              /* Buffer length. */
 
 void reader_init(void) {
@@ -121,9 +121,6 @@ void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
     //pthread_mutex_unlock(&data_mutex);
 }
 
-#define BUF_NUM 12
-#define BUF_LEN (16*16384)
-
 void *readerThreadEntryPoint(void *arg) {
     rtlsdr_read_async(dev, rtlsdrCallback, NULL, 0, 0);
 
@@ -144,7 +141,6 @@ static void sighandler(int signum) {
 	if (signum == SIGINT) {
 		fprintf(stderr, "received SIGINT\n");
 		run = 0;
-		exit(0);
 	}    
 }
 
@@ -183,7 +179,7 @@ int main (int argc, char **argv) {
 
 	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
 
-	while(1) {
+	while(run) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
         fprintf(stderr, "BAMBOOZLE!");
@@ -191,7 +187,8 @@ int main (int argc, char **argv) {
 
     //pthread_mutex_lock(&data_mutex);
 
-
+    pthread_cancel(&reader_thread);
+    
 	rtlsdr_close(dev);
 
 
