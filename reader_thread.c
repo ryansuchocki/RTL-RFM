@@ -28,7 +28,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
     if (bytes > 262144) bytes = 262144;
 
     data_len = 0;
-    j = 0;
+    uint32_t j = 0;
     int16_t countI = 0;
     int16_t countQ = 0;
 
