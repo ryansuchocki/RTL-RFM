@@ -31,7 +31,7 @@ int freq = 869412500;
 int ppm = 43;
 int baudrate = 4800;
 
-int gain = 496;
+int gain = 999999; //496;
 
 
 static void sighandler(int signum) {
