@@ -144,9 +144,6 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 
 	clk = (clk + 1) % CLKPERIOD;
 
-	//uint8_t b1 = fgetc(rtlstream);
-	//uint8_t b2 = fgetc(rtlstream);
-
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 	//thissample = lopass(hipass((int16_t) (b1 | (b2<<8)) /*/ 2*/)); // make headroom for filter offset. Unnecessary! filter always moves it towards zero!
 	thissample = lopass(hipass(sample));
@@ -157,24 +154,24 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 	
 	// Zero-Crossing Detector:
 	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
-		//if (debugplot) printf("K");
+		if (debugplot) printf("K");
 
 		if (clk > 0 && clk <= (CLKPERIOD/2)) {
 			clk -= (CLKPERIOD+1); // delay clock
-			//clk = clk - 1;		
-			//if (clk == 0) clk = -1*CLKPERIOD;						// delay clock		
-			//if (debugplot) printf ("^%d", clk); 		// clock has happened recently
+			clk = clk - 1;		
+			if (clk == 0) clk = -1*CLKPERIOD;						// delay clock		
+			if (debugplot) printf ("^%d", clk); 		// clock has happened recently
 		} else if (clk > (CLKPERIOD/2) && clk < (CLKPERIOD)) {
 			clk = (clk + 1) % CLKPERIOD;			// advance clock 
-			//if (debugplot) printf("v%d", clk); 		// clock is happening soon
+			if (debugplot) printf("v%d", clk); 		// clock is happening soon
 		} else {
-			//if (debugplot) putchar('<');		// clock is locked on
+			if (debugplot) putchar('<');		// clock is locked on
 		}		
 	}
 
 	uint8_t thebit = (mavg > 0) ? 1 : 0; // take the sign of the moving average window. Effectively a low pass with binary threshold...
 
-	//if (debugplot) putchar('\n');
+	if (debugplot) putchar('\n');
 
 
 	if (clk == 0) return(thebit);	
