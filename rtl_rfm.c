@@ -125,12 +125,12 @@ void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
 #define BUF_LEN (16*16384)
 
 void *readerThreadEntryPoint(void *arg) {
-    //rtlsdr_read_async(dev, rtlsdrCallback, NULL, BUF_NUM, BUF_LEN);
+    rtlsdr_read_async(dev, rtlsdrCallback, NULL, 0, 0);
 
     //return NULL;
 
     while(1) {
-    	sleep(1000);
+    	sleep(1);
 
     	pthread_cond_signal(&data_cond);
     }
