@@ -43,7 +43,6 @@ static void sighandler(int signum) {
 
 
 void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
-    pthread_mutex_lock(&data_mutex);
 
     uint32_t bytes = len;
     if (bytes > 262144) bytes = 262144;
@@ -84,8 +83,6 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
     //memcpy(data, buf, data_len);
 
     data_ready = true;
-    pthread_cond_signal(&data_cond);
-    pthread_mutex_unlock(&data_mutex);
 }
 
 
