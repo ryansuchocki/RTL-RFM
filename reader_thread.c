@@ -21,7 +21,6 @@ void reader_init(void) {
     //memset(data,0,data_len);
 }
 
-
 void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
     pthread_mutex_lock(&data_mutex);
 
