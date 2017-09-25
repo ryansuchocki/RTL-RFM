@@ -26,8 +26,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
     uint32_t bytes = len;
     if (bytes > 262144) bytes = 262144;
-
-    int downsample = 64;
+    
     data_len = 0;
     int16_t countI = 0;
     int16_t countQ = 0;
@@ -39,7 +38,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
         countI += thisI;
         countQ += thisQ;
 
-        if (data_len == downsample) {
+        if (data_len == (DOWNSAMPLE * 2)) {
             dataI[data_len] = countI;
             dataQ[data_len] = countQ;
 
