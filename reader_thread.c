@@ -40,8 +40,8 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
         countQ += thisQ;
 
         if (data_len == downsample) {
-            dataI[i] = countI;
-            dataQ[i] = countQ;
+            dataI[data_len] = countI;
+            dataQ[data_len] = countQ;
 
             countI = 0;
             countQ = 0;
