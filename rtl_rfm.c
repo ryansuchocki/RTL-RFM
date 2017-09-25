@@ -87,6 +87,8 @@ int main (int argc, char **argv) {
 			int8_t bit = fsk_decode(fm_demod(dataI[i], dataQ[i]), fm_magnitude);
 			if (bit >= 0) rfm_decode(bit);
         }
+
+        data_ready = false;
     }
 
     if (!quiet) printf("\n>> RTL_RFM Shutting Down!\n");
