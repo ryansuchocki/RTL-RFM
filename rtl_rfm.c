@@ -185,6 +185,8 @@ int main (int argc, char **argv) {
 
     //pthread_cancel(reader_thread);
 
+    pthread_mutex_lock(&data_mutex);
+
 	rtlsdr_close(dev);
 
 
