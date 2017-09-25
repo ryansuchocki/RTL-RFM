@@ -42,4 +42,10 @@ void *reader_entry(void *arg) {
 
 void reader_start() {
     pthread_create(&reader_thread, NULL, reader_entry, NULL);
+    pthread_mutex_lock(&data_mutex);
+}
+
+void reader_stop() {
+    rtlsdr_cancel_async(dev);
+    rtlsdr_close(dev);
 }

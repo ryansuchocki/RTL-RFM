@@ -3,6 +3,7 @@
 
 void reader_init(void);
 void reader_start();
+void reader_stop();
 
 pthread_t reader_thread;
 pthread_mutex_t data_mutex;     /* Mutex to synchronize buffer access. */
