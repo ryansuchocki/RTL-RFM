@@ -176,7 +176,9 @@ int main (int argc, char **argv) {
 	while(run) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
-        pthread_mutex_unlock(&data_mutex);
+        pthread_mutex_lock(&data_mutex);
+
+        //pthread_mutex_unlock(&data_mutex);
 
         //fprintf(stderr, "BAMBOOZLE!");
 
@@ -198,7 +200,7 @@ int main (int argc, char **argv) {
 			}
         }
 
-        pthread_mutex_lock(&data_mutex);
+        //pthread_mutex_lock(&data_mutex);
     }
 
     fprintf(stderr, "\n>> Shutting Down!\n");
