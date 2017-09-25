@@ -189,7 +189,7 @@ int main (int argc, char **argv) {
 
     fprintf(stderr, "Shutting Down");
 
-    //pthread_cancel(reader_thread);
+    rtlsdr_cancel_async(dev);
 
     fprintf(stderr, "Shutting Down2");
 
