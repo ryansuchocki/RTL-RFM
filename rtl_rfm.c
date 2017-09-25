@@ -173,6 +173,8 @@ int main (int argc, char **argv) {
 
 	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
 
+	pthread_mutex_lock(&data_mutex);
+
 	while(run) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
