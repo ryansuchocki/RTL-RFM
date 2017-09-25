@@ -65,6 +65,7 @@ int16_t offsethold = 0;
 bool hold = false;
 
 int16_t hipass(int16_t sample) {
+	if (hold) return sample - offsethold;
 
 	fi = (fi + 1) % filtersize;
 
@@ -74,7 +75,6 @@ int16_t hipass(int16_t sample) {
 
 	latestoffset = count / filtersize;
 
-	if (hold) return sample - offsethold;
 	return sample - latestoffset;
 }
 

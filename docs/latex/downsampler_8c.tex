@@ -1,0 +1,105 @@
+\hypertarget{downsampler_8c}{}\section{downsampler.\+c File Reference}
+\label{downsampler_8c}\index{downsampler.\+c@{downsampler.\+c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$ctype.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$time.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}rtl\+\_\+rfm.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}downsampler.\+h\char`\"{}}\newline
+Include dependency graph for downsampler.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{downsampler_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{downsampler_8c_abaea1412d36c238f155dada03df2d900}{downsampler\+\_\+init} ()
+\item 
+bool \hyperlink{downsampler_8c_adf43368ebff559c63105203d3df56e47}{downsampler} (int8\+\_\+t newi, int8\+\_\+t newq)
+\item 
+int8\+\_\+t \hyperlink{downsampler_8c_a1e27c90a0a81573342ea44e9149d6417}{getI} ()
+\item 
+int8\+\_\+t \hyperlink{downsampler_8c_a5e89160f5ffae1026c9cc21f4ab2abcc}{getQ} ()
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int8\+\_\+t \hyperlink{downsampler_8c_ad5960b91146cfef0ce43f5787a4c039b}{ibuf} \mbox{[}\hyperlink{rtl__rfm_8h_a061e870517c5d5c01d232d72e5b6857f}{D\+O\+W\+N\+S\+A\+M\+P\+LE}\mbox{]}
+\item 
+int8\+\_\+t \hyperlink{downsampler_8c_ae4cf2ded73bff3999b19dcded17a2c7d}{qbuf} \mbox{[}\hyperlink{rtl__rfm_8h_a061e870517c5d5c01d232d72e5b6857f}{D\+O\+W\+N\+S\+A\+M\+P\+LE}\mbox{]}
+\item 
+uint8\+\_\+t \hyperlink{downsampler_8c_a01e8922c4e821da63d9b5060a0a30f45}{bufi} = 0
+\item 
+int16\+\_\+t \hyperlink{downsampler_8c_acf6c0ad89b09caa5a9458c96bc8b0abb}{icount} = 0
+\item 
+int16\+\_\+t \hyperlink{downsampler_8c_a6ad9b208c724b45811ffb0742a0251a3}{qcount} = 0
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{downsampler_8c_adf43368ebff559c63105203d3df56e47}\label{downsampler_8c_adf43368ebff559c63105203d3df56e47}} 
+\index{downsampler.\+c@{downsampler.\+c}!downsampler@{downsampler}}
+\index{downsampler@{downsampler}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{downsampler()}{downsampler()}}
+{\footnotesize\ttfamily bool downsampler (\begin{DoxyParamCaption}\item[{int8\+\_\+t}]{newi,  }\item[{int8\+\_\+t}]{newq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{downsampler_8c_abaea1412d36c238f155dada03df2d900}\label{downsampler_8c_abaea1412d36c238f155dada03df2d900}} 
+\index{downsampler.\+c@{downsampler.\+c}!downsampler\+\_\+init@{downsampler\+\_\+init}}
+\index{downsampler\+\_\+init@{downsampler\+\_\+init}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{downsampler\+\_\+init()}{downsampler\_init()}}
+{\footnotesize\ttfamily void downsampler\+\_\+init (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{downsampler_8c_a1e27c90a0a81573342ea44e9149d6417}\label{downsampler_8c_a1e27c90a0a81573342ea44e9149d6417}} 
+\index{downsampler.\+c@{downsampler.\+c}!getI@{getI}}
+\index{getI@{getI}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{get\+I()}{getI()}}
+{\footnotesize\ttfamily int8\+\_\+t getI (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{downsampler_8c_a5e89160f5ffae1026c9cc21f4ab2abcc}\label{downsampler_8c_a5e89160f5ffae1026c9cc21f4ab2abcc}} 
+\index{downsampler.\+c@{downsampler.\+c}!getQ@{getQ}}
+\index{getQ@{getQ}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{get\+Q()}{getQ()}}
+{\footnotesize\ttfamily int8\+\_\+t getQ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{downsampler_8c_a01e8922c4e821da63d9b5060a0a30f45}\label{downsampler_8c_a01e8922c4e821da63d9b5060a0a30f45}} 
+\index{downsampler.\+c@{downsampler.\+c}!bufi@{bufi}}
+\index{bufi@{bufi}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{bufi}{bufi}}
+{\footnotesize\ttfamily uint8\+\_\+t bufi = 0}
+
+\mbox{\Hypertarget{downsampler_8c_ad5960b91146cfef0ce43f5787a4c039b}\label{downsampler_8c_ad5960b91146cfef0ce43f5787a4c039b}} 
+\index{downsampler.\+c@{downsampler.\+c}!ibuf@{ibuf}}
+\index{ibuf@{ibuf}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{ibuf}{ibuf}}
+{\footnotesize\ttfamily int8\+\_\+t ibuf\mbox{[}\hyperlink{rtl__rfm_8h_a061e870517c5d5c01d232d72e5b6857f}{D\+O\+W\+N\+S\+A\+M\+P\+LE}\mbox{]}}
+
+\mbox{\Hypertarget{downsampler_8c_acf6c0ad89b09caa5a9458c96bc8b0abb}\label{downsampler_8c_acf6c0ad89b09caa5a9458c96bc8b0abb}} 
+\index{downsampler.\+c@{downsampler.\+c}!icount@{icount}}
+\index{icount@{icount}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{icount}{icount}}
+{\footnotesize\ttfamily int16\+\_\+t icount = 0}
+
+\mbox{\Hypertarget{downsampler_8c_ae4cf2ded73bff3999b19dcded17a2c7d}\label{downsampler_8c_ae4cf2ded73bff3999b19dcded17a2c7d}} 
+\index{downsampler.\+c@{downsampler.\+c}!qbuf@{qbuf}}
+\index{qbuf@{qbuf}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{qbuf}{qbuf}}
+{\footnotesize\ttfamily int8\+\_\+t qbuf\mbox{[}\hyperlink{rtl__rfm_8h_a061e870517c5d5c01d232d72e5b6857f}{D\+O\+W\+N\+S\+A\+M\+P\+LE}\mbox{]}}
+
+\mbox{\Hypertarget{downsampler_8c_a6ad9b208c724b45811ffb0742a0251a3}\label{downsampler_8c_a6ad9b208c724b45811ffb0742a0251a3}} 
+\index{downsampler.\+c@{downsampler.\+c}!qcount@{qcount}}
+\index{qcount@{qcount}!downsampler.\+c@{downsampler.\+c}}
+\subsubsection{\texorpdfstring{qcount}{qcount}}
+{\footnotesize\ttfamily int16\+\_\+t qcount = 0}
+
