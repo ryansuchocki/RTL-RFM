@@ -49,7 +49,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             data_len++;
             j = 0;
         } else {
-            j++;
+            j+=2;
         }
     }
 
