@@ -32,7 +32,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
     int16_t countI = 0;
     int16_t countQ = 0;
 
-    for (uint32_t i = 0; i<bytes; i+=2) {
+    for (uint32_t i=0; i<bytes; i+=2) {
         int8_t thisI = ((uint8_t) buf[i]) - 128;
         int8_t thisQ = ((uint8_t) buf[i+1]) - 128;
 

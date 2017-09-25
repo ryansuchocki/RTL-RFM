@@ -153,7 +153,7 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 
 	mavg = moving_average(thissample);
 
-	//if (debugplot) print_waveform(thissample, magnitude);
+	if (debugplot) print_waveform(thissample, magnitude);
 	
 	// Zero-Crossing Detector:
 	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
