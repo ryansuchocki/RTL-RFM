@@ -179,6 +179,8 @@ int main (int argc, char **argv) {
         fprintf(stderr, "BAMBOOZLE!");
     }
 
+    fprintf(stderr, "Shutting Down");
+
     //pthread_mutex_lock(&data_mutex);
 
     pthread_cancel(reader_thread);
