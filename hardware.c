@@ -16,6 +16,8 @@ extern int errno;
 #include "rtl_rfm.h"
 #include "hardware.h"
 
+// SEE dump1090
+
 int hardware_init() {
     int j;
     int dev_index = 0;

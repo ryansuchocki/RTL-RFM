@@ -24,10 +24,35 @@ void reader_init(void) {
 void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
     pthread_mutex_lock(&data_mutex);
 
-    data_len = len;
-    if (data_len > 262144) data_len = 262144;
+    uint32_t bytes = len;
+    if (bytes > 262144) bytes = 262144;
 
-    memcpy(data, buf, data_len);
+    int downsample = 64;
+    data_len = 0;
+    int16_t countI = 0;
+    int16_t countQ = 0;
+
+    for (uint32_t i = 0; i<bytes; i+=2) {
+        int8_t thisI = ((uint8_t) buf[i]) - 128;
+        int8_t thisQ = ((uint8_t) buf[i+1]) - 128;
+
+        countI += thisI;
+        countQ += thisQ;
+
+        if (data_len == downsample) {
+            dataI[i] = countI;
+            dataQ[i] = countQ;
+
+            countI = 0;
+            countQ = 0;
+
+            data_len = 0;
+        } else {
+            data_len++;
+        }
+    }
+
+    //memcpy(data, buf, data_len);
 
     pthread_cond_signal(&data_cond);
     pthread_mutex_unlock(&data_mutex);

@@ -79,20 +79,15 @@ int main (int argc, char **argv) {
 	while(run) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
-        for (uint32_t j = 0; j < data_len; j+=2) {
+        for (uint32_t i = 0; i < data_len; i++) {
 
-        	int8_t i = ((uint8_t) data[j]) - 128;
-			int8_t q = ((uint8_t) data[j+1]) - 128;
+        	int8_t di = dataI[i];
+			int8_t dq = dataQ[i];
 
-			if (downsampler(i, q)) {
-				int8_t di = getI();
-				int8_t dq = getQ();
+			int16_t fm = fm_demod(di, dq);
 
-				int16_t fm = fm_demod(di, dq);
-
-				int8_t bit = fsk_decode(fm, fm_magnitude);
-				if (bit >= 0) rfm_decode(bit);
-			}
+			int8_t bit = fsk_decode(fm, fm_magnitude);
+			if (bit >= 0) rfm_decode(bit);
         }
     }
 
