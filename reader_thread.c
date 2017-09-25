@@ -40,8 +40,11 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
         countQ += thisQ;
 
         if (j == DOWNSAMPLE) {
-            dataI[j] = countI / DOWNSAMPLE;
-            dataQ[j] = countQ / DOWNSAMPLE;
+            int16_t avgI = countI / DOWNSAMPLE;
+            int16_t avgQ = countQ / DOWNSAMPLE;
+
+            dataI[j] = (int8_t) avgI;
+            dataQ[j] = (int8_t) avgQ;
 
             countI = 0;
             countQ = 0;
