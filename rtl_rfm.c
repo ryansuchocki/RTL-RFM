@@ -81,6 +81,8 @@ int main (int argc, char **argv) {
 
         for (uint16_t i = 0; i < data_len; i++) {
 
+        	fprintf(stderr, "@%i\t", dataI[i]);
+
 			int8_t bit = fsk_decode(fm_demod(dataI[i], dataQ[i]), fm_magnitude);
 			if (bit >= 0) rfm_decode(bit);
         }
