@@ -83,8 +83,8 @@ int main (int argc, char **argv) {
 
         	//fprintf(stderr, "got %i.\n", data_len);
 
-        	int8_t di = dataI[i] / DOWNSAMPLE;
-			int8_t dq = dataQ[i] / DOWNSAMPLE;
+        	int8_t di = dataI[i];
+			int8_t dq = dataQ[i];
 
 			int16_t fm = fm_demod(di, dq);
 
