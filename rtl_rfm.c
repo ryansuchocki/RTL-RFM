@@ -41,6 +41,55 @@ static void sighandler(int signum) {
 	}    
 }
 
+
+void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
+    pthread_mutex_lock(&data_mutex);
+
+    uint32_t bytes = len;
+    if (bytes > 262144) bytes = 262144;
+
+    data_len = 0; // bytes / DOWNSAMPLE / 2;
+    uint32_t j = 0;
+    int16_t countI = 0;
+    int16_t countQ = 0;
+
+    for (uint32_t i=0; i<bytes; i+=2) {
+        int8_t thisI = ((uint8_t) buf[i]) - 128;
+        int8_t thisQ = ((uint8_t) buf[i+1]) - 128;
+
+        countI += thisI;
+        countQ += thisQ;
+
+        j++;
+
+        if (j == DOWNSAMPLE) {
+            int16_t avgI = countI / DOWNSAMPLE;
+            int16_t avgQ = countQ / DOWNSAMPLE;
+
+            int8_t bit = fsk_decode(fm_demod(avgI, avgQ), fm_magnitude);
+            if (bit >= 0) rfm_decode(bit);
+
+            //dataI[data_len] = (int8_t) avgI;
+            //dataQ[data_len] = (int8_t) avgQ;
+
+            countI = 0;
+            countQ = 0;
+
+            j = 0;
+
+            data_len++;
+        }
+    }
+
+    //memcpy(data, buf, data_len);
+
+    data_ready = true;
+    pthread_cond_signal(&data_cond);
+    pthread_mutex_unlock(&data_mutex);
+}
+
+
+
 int main (int argc, char **argv) {
 
 	int c;
