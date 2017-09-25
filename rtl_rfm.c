@@ -138,6 +138,7 @@ static void sighandler(int signum) {
 	if (signum == SIGINT) {
 		fprintf(stderr, "received SIGINT\n");
 		run = 0;
+		exit(0);
 	}    
 }
 
