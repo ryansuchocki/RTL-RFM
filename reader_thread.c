@@ -47,8 +47,11 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             int16_t avgI = countI / DOWNSAMPLE;
             int16_t avgQ = countQ / DOWNSAMPLE;
 
-            dataI[data_len] = (int8_t) avgI;
-            dataQ[data_len] = (int8_t) avgQ;
+            int8_t bit = fsk_decode(fm_demod(avgI, avgQ), fm_magnitude);
+            if (bit >= 0) rfm_decode(bit);
+
+            //dataI[data_len] = (int8_t) avgI;
+            //dataQ[data_len] = (int8_t) avgQ;
 
             countI = 0;
             countQ = 0;

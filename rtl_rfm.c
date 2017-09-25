@@ -74,9 +74,11 @@ int main (int argc, char **argv) {
 
 	fsk_init();
 
-	reader_start();
+	//reader_start();
 
-	while(run) {
+	rtlsdr_read_async(dev, reader_callback, NULL, 0, 0);
+
+	/*while(run) {
 		pthread_mutex_lock(&data_mutex);
 		while (data_ready == 0)
 		    pthread_cond_wait(&data_cond, &data_mutex);
@@ -91,7 +93,7 @@ int main (int argc, char **argv) {
         data_ready = false;
 
         pthread_mutex_unlock(&data_mutex);
-    }
+    }*/
 
     if (!quiet) printf("\n>> RTL_RFM Shutting Down!\n");
 
