@@ -77,7 +77,7 @@ int main (int argc, char **argv) {
 	reader_start();
 
 	while(run) {
-		pthread_mutex_lock(&mutex);
+		pthread_mutex_lock(&data_mutex);
 		while (data_ready == 0)
 		    pthread_cond_wait(&data_cond, &data_mutex);
 		
@@ -90,7 +90,7 @@ int main (int argc, char **argv) {
 
         data_ready = false;
 
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&data_mutex);
     }
 
     if (!quiet) printf("\n>> RTL_RFM Shutting Down!\n");
