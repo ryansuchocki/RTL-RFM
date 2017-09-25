@@ -178,7 +178,11 @@ int main (int argc, char **argv) {
 	while(run) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
+        pthread_mutex_unlock(&data_mutex);
+
         fprintf(stderr, "BAMBOOZLE!");
+
+        // do something with the data
 
         pthread_mutex_lock(&data_mutex);
     }
