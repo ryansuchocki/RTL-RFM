@@ -35,7 +35,7 @@ FILE *rtlstream = NULL;
 
 int dev_index;
 rtlsdr_dev_t *dev;
-int gain = 500;
+int gain = 490;
 static int setup_hardware() {
     int j;
     int device_count;
@@ -177,7 +177,7 @@ int main (int argc, char **argv) {
 
 	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
 
-    pthread_mutex_lock(&data_mutex);
+    //pthread_mutex_lock(&data_mutex);
 
 
 	rtlsdr_close(dev);
