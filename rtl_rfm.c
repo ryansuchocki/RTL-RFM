@@ -193,7 +193,7 @@ int main (int argc, char **argv) {
 
     fprintf(stderr, "Shutting Down2");
 
-	rtlsdr_close(&dev);
+	rtlsdr_close(dev);
 	fprintf(stderr, "Shutting Down3");
 
 
