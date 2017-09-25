@@ -107,16 +107,13 @@ void reader_init(void) {
 void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
     pthread_mutex_lock(&data_mutex);
 
-    fprintf(stderr, "Got %i bytes!", len);
+    //fprintf(stderr, "Got %i bytes!", len);
 
-    //if (len > 1024) len = 1024;
-    /* Move the last part of the previous buffer, that was not processed,
-     * on the start of the new buffer. */
-    //memcpy(data, data+1024, (1024-1)*4);
+    data_len = len;
+    if (data_len > 262144) data_len = 262144;
 
-    //memcpy(data+(60-1)*4, buf, len);
-    //data_ready = 1;
-    /* Signal to the other thread that new data is ready */
+    memcpy(data, buf, data_len);
+
     pthread_cond_signal(&data_cond);
     pthread_mutex_unlock(&data_mutex);
 }
@@ -133,7 +130,7 @@ void *readerThreadEntryPoint(void *arg) {
 
 static void sighandler(int signum) {
 	if (signum == SIGINT) {
-		fprintf(stderr, "\n >> Received SIGINT\n");
+		fprintf(stderr, "\n>> Received SIGINT\n");
 		run = 0;
 	}    
 }
@@ -171,6 +168,8 @@ int main (int argc, char **argv) {
 
 	setup_hardware();
 
+	fsk_init();
+
 	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
 
 	pthread_mutex_lock(&data_mutex);
@@ -180,9 +179,25 @@ int main (int argc, char **argv) {
 
         pthread_mutex_unlock(&data_mutex);
 
-        fprintf(stderr, "BAMBOOZLE!");
+        //fprintf(stderr, "BAMBOOZLE!");
 
         // do something with the data
+
+        for (int j = 0; j < data_len; j+=2) {
+
+        	int8_t i = ((uint8_t) data[i]) - 128;
+			int8_t q = ((uint8_t) data[i+1]) - 128;
+
+			if (downsampler(i, q)) {
+				int8_t di = getI();
+				int8_t dq = getQ();
+
+				int16_t fm = fm_demod(di, dq);
+
+				int8_t bit = fsk_decode(fm, fm_magnitude);
+				if (bit >= 0) rfm_decode(bit);
+			}
+        }
 
         pthread_mutex_lock(&data_mutex);
     }
@@ -192,6 +207,7 @@ int main (int argc, char **argv) {
     rtlsdr_cancel_async(dev);
 	rtlsdr_close(dev);
 
+	fsk_cleanup();
 
 
 
