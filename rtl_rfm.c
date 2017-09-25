@@ -177,6 +177,10 @@ int main (int argc, char **argv) {
 
 	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
 
+	while(1) {
+		
+	}
+
     //pthread_mutex_lock(&data_mutex);
 
 
