@@ -177,15 +177,14 @@ int main (int argc, char **argv) {
         pthread_cond_wait(&data_cond, &data_mutex);
 
         fprintf(stderr, "BAMBOOZLE!");
+
+        pthread_mutex_lock(&Modes.data_mutex);
     }
 
     fprintf(stderr, "Shutting Down");
 
-    //pthread_mutex_lock(&data_mutex);
-
     //pthread_cancel(reader_thread);
 
-    pthread_mutex_lock(&data_mutex);
     fprintf(stderr, "Shutting Down2");
 
 	rtlsdr_close(dev);
