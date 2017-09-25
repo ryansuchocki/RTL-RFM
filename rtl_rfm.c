@@ -124,13 +124,7 @@ void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
 void *readerThreadEntryPoint(void *arg) {
     rtlsdr_read_async(dev, rtlsdrCallback, NULL, 0, 0);
 
-    //return NULL;
-
-    while(1) {
-    	sleep(1);
-
-    	pthread_cond_signal(&data_cond);
-    }
+    return NULL;
 }
 
 
