@@ -45,7 +45,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             int16_t avgI = countI / DOWNSAMPLE;
             int16_t avgQ = countQ / DOWNSAMPLE;
 
-            fprintf(stderr, "%i\t", avgI);
+            fprintf(stderr, "%i\t", countI);
 
             dataI[data_len] = (int8_t) avgI;
             dataQ[data_len] = (int8_t) avgQ;
