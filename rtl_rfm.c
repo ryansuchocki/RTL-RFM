@@ -186,8 +186,10 @@ int main (int argc, char **argv) {
     //pthread_cancel(reader_thread);
 
     pthread_mutex_lock(&data_mutex);
+    fprintf(stderr, "Shutting Down2");
 
 	rtlsdr_close(dev);
+	fprintf(stderr, "Shutting Down3");
 
 
 
