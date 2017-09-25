@@ -39,13 +39,13 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
         countI += thisI;
         countQ += thisQ;
 
-        if (j == (DOWNSAMPLE)) {
-            dataI[data_len] = countI;
-            dataQ[data_len] = countQ;
+        if (j == DOWNSAMPLE) {
+            dataI[j] = countI;
+            dataQ[j] = countQ;
 
             countI = 0;
             countQ = 0;
-            
+
             j = 0;
         } else {
             j++;
