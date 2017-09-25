@@ -39,7 +39,6 @@ int gain = 490;
 static int setup_hardware() {
     int j;
     int device_count;
-    int ppm_error = 0;
     char vendor[256], product[256], serial[256];
 
     device_count = rtlsdr_get_device_count();
@@ -78,7 +77,7 @@ static int setup_hardware() {
     } else {
         fprintf(stderr, "Using automatic gain control.\n");
     }
-    rtlsdr_set_freq_correction(dev, ppm_error);
+    rtlsdr_set_freq_correction(dev, ppm);
     //if (Modes.enable_agc) rtlsdr_set_agc_mode(dev, 1);
     rtlsdr_set_center_freq(dev, freq);
     rtlsdr_set_sample_rate(dev, BIGSAMPLERATE);
