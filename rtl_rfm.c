@@ -183,10 +183,10 @@ int main (int argc, char **argv) {
 
         // do something with the data
 
-        for (int j = 0; j < data_len; j+=2) {
+        for (uint32_t j = 0; j < data_len; j+=2) {
 
-        	int8_t i = ((uint8_t) data[i]) - 128;
-			int8_t q = ((uint8_t) data[i+1]) - 128;
+        	int8_t i = ((uint8_t) data[j]) - 128;
+			int8_t q = ((uint8_t) data[j+1]) - 128;
 
 			if (downsampler(i, q)) {
 				int8_t di = getI();
