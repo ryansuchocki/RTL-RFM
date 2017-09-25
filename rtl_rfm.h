@@ -1,6 +1,8 @@
 #ifndef _MAIN_H_GUARD
 #define _MAIN_H_GUARD
 
+#include <rtl-sdr.h>
+
 #define BIGSAMPLERATE 2457600
 #define DOWNSAMPLE 64
 
@@ -12,5 +14,7 @@ int freq;
 int gain;
 int ppm;
 int baudrate;
+
+rtlsdr_dev_t *dev;
 
 #endif

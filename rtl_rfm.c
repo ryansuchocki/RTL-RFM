@@ -18,6 +18,7 @@ extern int errno;
 #include <pthread.h>
 
 #include "rtl_rfm.h"
+#include "reader_thread.h"
 #include "downsampler.h"
 #include "fm.h"
 #include "fsk.h"
@@ -32,10 +33,9 @@ int baudrate = 4800;
 
 FILE *rtlstream = NULL;
 
-
 int dev_index;
-rtlsdr_dev_t *dev;
 int gain = 490;
+
 static int setup_hardware() {
     int j;
     int device_count;
@@ -88,41 +88,6 @@ static int setup_hardware() {
     return 0;
 }
 
-pthread_t reader_thread;
-pthread_mutex_t data_mutex;     /* Mutex to synchronize buffer access. */
-pthread_cond_t data_cond;       /* Conditional variable associated. */
-unsigned char data [262144];            /* Raw IQ samples buffer */
-uint32_t data_len;              /* Buffer length. */
-
-void reader_init(void) {
-
-    pthread_mutex_init(&data_mutex, NULL);
-    pthread_cond_init(&data_cond, NULL);
-   
-    //memset(data,0,data_len);
-}
-
-
-void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
-    pthread_mutex_lock(&data_mutex);
-
-    //fprintf(stderr, "Got %i bytes!", len);
-
-    data_len = len;
-    if (data_len > 262144) data_len = 262144;
-
-    memcpy(data, buf, data_len);
-
-    pthread_cond_signal(&data_cond);
-    pthread_mutex_unlock(&data_mutex);
-}
-
-void *readerThreadEntryPoint(void *arg) {
-    rtlsdr_read_async(dev, rtlsdrCallback, NULL, 0, 0);
-
-    return NULL;
-}
-
 
 
 
@@ -169,7 +134,7 @@ int main (int argc, char **argv) {
 
 	fsk_init();
 
-	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
+	reader_start();
 
 	pthread_mutex_lock(&data_mutex);
 
