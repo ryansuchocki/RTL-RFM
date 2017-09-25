@@ -105,7 +105,7 @@ void reader_init(void) {
 
 
 void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
-    pthread_mutex_lock(&data_mutex);
+    //pthread_mutex_lock(&data_mutex);
 
     fprintf(stderr, "Got %i bytes!", len);
 
@@ -118,7 +118,7 @@ void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
     //data_ready = 1;
     /* Signal to the other thread that new data is ready */
     pthread_cond_signal(&data_cond);
-    pthread_mutex_unlock(&data_mutex);
+    //pthread_mutex_unlock(&data_mutex);
 }
 
 #define BUF_NUM 12
