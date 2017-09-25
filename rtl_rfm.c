@@ -121,7 +121,7 @@ void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
     pthread_mutex_unlock(&data_mutex);
 }
 
-#define BUF_NUM 12
+#define BUF_NUM 5
 #define BUF_LEN (16*16384)
 
 void *readerThreadEntryPoint(void *arg) {
