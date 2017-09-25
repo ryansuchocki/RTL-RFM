@@ -39,7 +39,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
         countI += thisI;
         countQ += thisQ;
 
-        if (j == (DOWNSAMPLE * 2)) {
+        if (j == (DOWNSAMPLE)) {
             dataI[data_len] = countI;
             dataQ[data_len] = countQ;
 
@@ -49,7 +49,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             data_len++;
             j = 0;
         } else {
-            j+=2;
+            j++;
         }
     }
 
