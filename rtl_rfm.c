@@ -84,11 +84,16 @@ static int setup_hardware() {
     rtlsdr_reset_buffer(dev);
     fprintf(stderr, "Gain reported by device: %.2f\n",
         rtlsdr_get_tuner_gain(dev)/10.0);
+
+    return 0;
 }
 
 
 static void sighandler(int signum) {
-    run = 0;
+	if (signum == SIGINT) {
+		fprintf(stderr, "received SIGINT\n");
+		run = 0;
+	}    
 }
 
 int main (int argc, char **argv) {
@@ -123,6 +128,12 @@ int main (int argc, char **argv) {
 	signal(SIGINT, sighandler);
 
 	setup_hardware();
+
+	sleep(100);
+
+	rtlsdr_close(dev);
+
+	sleep(100);
 
 
 
