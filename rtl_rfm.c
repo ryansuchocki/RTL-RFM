@@ -15,6 +15,7 @@
 extern int errno;
 
 #include <rtl-sdr.h>
+#include <pthread.h>
 
 #include "rtl_rfm.h"
 #include "downsampler.h"
@@ -88,6 +89,50 @@ static int setup_hardware() {
     return 0;
 }
 
+pthread_t reader_thread;
+pthread_mutex_t data_mutex;     /* Mutex to synchronize buffer access. */
+pthread_cond_t data_cond;       /* Conditional variable associated. */
+unsigned char data [1024];            /* Raw IQ samples buffer */
+uint32_t data_len;              /* Buffer length. */
+
+void reader_init(void) {
+
+    pthread_mutex_init(&data_mutex, NULL);
+    pthread_cond_init(&data_cond, NULL);
+   
+    //memset(data,0,data_len);
+}
+
+
+void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx) {
+    pthread_mutex_lock(&data_mutex);
+
+    fprintf(stderr, "Got %i bytes!", len);
+
+    //if (len > 1024) len = 1024;
+    /* Move the last part of the previous buffer, that was not processed,
+     * on the start of the new buffer. */
+    //memcpy(data, data+1024, (1024-1)*4);
+
+    //memcpy(data+(60-1)*4, buf, len);
+    //data_ready = 1;
+    /* Signal to the other thread that new data is ready */
+    pthread_cond_signal(&data_cond);
+    pthread_mutex_unlock(&data_mutex);
+}
+
+#define BUF_NUM 12
+#define BUF_LEN (16*16384)
+
+void *readerThreadEntryPoint(void *arg) {
+    rtlsdr_read_async(dev, rtlsdrCallback, NULL, BUF_NUM, BUF_LEN);
+
+    return NULL;
+}
+
+
+
+
 
 static void sighandler(int signum) {
 	if (signum == SIGINT) {
@@ -129,44 +174,49 @@ int main (int argc, char **argv) {
 
 	setup_hardware();
 
-	sleep(100);
+	pthread_create(&reader_thread, NULL, readerThreadEntryPoint, NULL);
+
+    pthread_mutex_lock(&data_mutex);
+
 
 	rtlsdr_close(dev);
 
-	sleep(100);
+
+
+
 
 
 
 
 	fsk_init();
 
-	char cmdstring[128];
+	//char cmdstring[128];
 
-	sprintf(cmdstring, "rtl_sdr -f %i -g %i -p %i -s %i - %s", freq, gain, ppm, BIGSAMPLERATE, (quiet? "2>/dev/null" : "")); /*-A fast*/
+	// sprintf(cmdstring, "rtl_sdr -f %i -g %i -p %i -s %i - %s", freq, gain, ppm, BIGSAMPLERATE, (quiet? "2>/dev/null" : "")); /*-A fast*/
 
-	if (!quiet) printf(">> STARTING RTL_FM ...\n\n");
+	// if (!quiet) printf(">> STARTING RTL_FM ...\n\n");
 
-	if (!rtlstream) rtlstream = popen(cmdstring, "r");
+	// if (!rtlstream) rtlstream = popen(cmdstring, "r");
 
-	if (!rtlstream) {
-		printf("\n>> ERROR\n");
-	} else {
-		while( run && !feof(rtlstream) ) {
+	// if (!rtlstream) {
+	// 	printf("\n>> ERROR\n");
+	// } else {
+	// 	while( run && !feof(rtlstream) ) {
 
-			int8_t i = ((uint8_t) fgetc(rtlstream)) - 128;
-			int8_t q = ((uint8_t) fgetc(rtlstream)) - 128;
+	// 		int8_t i = ((uint8_t) fgetc(rtlstream)) - 128;
+	// 		int8_t q = ((uint8_t) fgetc(rtlstream)) - 128;
 
-			if (downsampler(i, q)) {
-				int8_t di = getI();
-				int8_t dq = getQ();
+	// 		if (downsampler(i, q)) {
+	// 			int8_t di = getI();
+	// 			int8_t dq = getQ();
 
-				int16_t fm = fm_demod(di, dq);
+	// 			int16_t fm = fm_demod(di, dq);
 
-				int8_t bit = fsk_decode(fm, fm_magnitude);
-				if (bit >= 0) rfm_decode(bit);
-			}
-		}
-	}
+	// 			int8_t bit = fsk_decode(fm, fm_magnitude);
+	// 			if (bit >= 0) rfm_decode(bit);
+	// 		}
+	// 	}
+	// }
 
 	fsk_cleanup();
 
