@@ -44,22 +44,10 @@ int hardware_init() {
     }
 
     /* Set gain, frequency, sample rate, and reset the device. */
-    rtlsdr_set_tuner_gain_mode(dev, (gain == -100) ? 0 : 1);
-    if (gain != -100) {
-        if (gain == 999999) {
-            /* Find the maximum gain available. */
-            int numgains;
-            int gains[100];
+    rtlsdr_set_tuner_gain_mode(dev, 1);
+ 
+    rtlsdr_set_tuner_gain(dev, 496);
 
-            numgains = rtlsdr_get_tuner_gains(dev, gains);
-            gain = gains[numgains-1];
-            fprintf(stderr, "Max available gain is: %.2f\n", gain/10.0);
-        }
-        rtlsdr_set_tuner_gain(dev, gain);
-        fprintf(stderr, "Setting gain to: %.2f\n", gain/10.0);
-    } else {
-        fprintf(stderr, "Using automatic gain control.\n");
-    }
     rtlsdr_set_freq_correction(dev, ppm);
     
     rtlsdr_set_agc_mode(dev, 0);
