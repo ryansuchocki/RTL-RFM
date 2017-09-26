@@ -70,6 +70,8 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             int16_t avgI = countI / DOWNSAMPLE;
             int16_t avgQ = countQ / DOWNSAMPLE;
 
+            fprintf(stderr, "%i\t", avgI);
+
             int8_t bit = fsk_decode(fm_demod(avgI, avgQ), fm_magnitude);
             if (bit >= 0) rfm_decode(bit);
 
