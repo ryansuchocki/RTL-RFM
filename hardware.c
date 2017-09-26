@@ -52,7 +52,7 @@ int hardware_init() {
     
     rtlsdr_set_agc_mode(dev, 0);
     rtlsdr_set_center_freq(dev, freq);
-    rtlsdr_set_sample_rate(dev, BIGSAMPLERATE);
+    rtlsdr_set_sample_rate(dev, 2048000);
     rtlsdr_reset_buffer(dev);
     
     fprintf(stderr, "Gain reported by device: %.2f\n",
