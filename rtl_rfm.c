@@ -250,7 +250,7 @@ int verbose_device_search(char *s)
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	for (int j = 0; j < len; j = j + 2) {
-		
+
 		int8_t i = ((uint8_t) buf[j]) - 128;
 		int8_t q = ((uint8_t) buf[j+1]) - 128;
 
@@ -345,7 +345,7 @@ int main (int argc, char **argv) {
 	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dev);
 
-	r = rtlsdr_read_async(dev, rtlsdr_callback, null, 0, 262144);
+	r = rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
 	while (run) {
 
