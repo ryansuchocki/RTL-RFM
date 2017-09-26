@@ -320,7 +320,7 @@ int main (int argc, char **argv) {
 		verbose_auto_gain(dev);
 	} else {
 		/* Enable manual gain */
-		int thegain = nearest_gain(dev, gain*10);
+		int thegain = nearest_gain(dev, 500);
 		verbose_gain_set(dev, thegain);
 	}
 
