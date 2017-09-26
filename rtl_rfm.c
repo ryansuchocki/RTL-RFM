@@ -337,20 +337,24 @@ int main (int argc, char **argv) {
 		int n_read = 0;
 		int rr = rtlsdr_read_sync(dev, buffer, 262144, &n_read);
 
-		//...
+		for (int j = 0; j < n_read; j = j + 2) {
+			int8_t i = ((uint8_t) buffer[j]) - 128;
+			int8_t q = ((uint8_t) buffer[j+1]) - 128;
 
-		int8_t i = ((uint8_t) fgetc(rtlstream)) - 128;
-		int8_t q = ((uint8_t) fgetc(rtlstream)) - 128;
+			if (downsampler(i, q)) {
+				int8_t di = getI();
+				int8_t dq = getQ();
 
-		if (downsampler(i, q)) {
-			int8_t di = getI();
-			int8_t dq = getQ();
+				int16_t fm = fm_demod(di, dq);
 
-			int16_t fm = fm_demod(di, dq);
-
-			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) rfm_decode(bit);
+				int8_t bit = fsk_decode(fm, fm_magnitude);
+				if (bit >= 0) rfm_decode(bit);
+			}
 		}
+
+
+
+		
 	}
 
 	fsk_cleanup();
