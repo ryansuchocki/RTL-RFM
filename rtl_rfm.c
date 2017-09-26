@@ -141,7 +141,7 @@ int main (int argc, char **argv) {
 		for (int i = 0; i < n_read; i+=2) {
 			downsampler(buffer[i], buffer[i+1]);
 
-			fsk_decode(fm_demod(getI(), getQ()), fm_magnitude);
+			int8_t bit = fsk_decode(fm_demod(getI(), getQ()), fm_magnitude);
 			if (bit >= 0) rfm_decode(bit);
 		}
 	}
