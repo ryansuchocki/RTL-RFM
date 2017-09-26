@@ -139,7 +139,10 @@ int main (int argc, char **argv) {
 		int r = rtlsdr_read_sync(dev, buffer, 262144, &n_read);
 
 		for (int i = 0; i < n_read; i+=2) {
-			if(downsampler(buffer[i], buffer[i+1])) {
+			int8_t thisI = ((uint8_t) buffer[i]) - 128;
+			int8_t thisQ = ((uint8_t) buffer[i+1]) - 128;
+
+			if(downsampler(thisI, thisQ)) {
 				int8_t bit = fsk_decode(fm_demod(getI(), getQ()), fm_magnitude);
 				if (bit >= 0) rfm_decode(bit);
 			}
