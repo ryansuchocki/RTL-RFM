@@ -43,16 +43,17 @@ int hardware_init() {
         exit(1);
     }
 
+    rtlsdr_set_sample_rate(dev, BIGSAMPLERATE);
+    rtlsdr_set_center_freq(dev, freq);
+
     /* Set gain, frequency, sample rate, and reset the device. */
     rtlsdr_set_tuner_gain_mode(dev, 1);
- 
-    rtlsdr_set_tuner_gain(dev, 496);
+    rtlsdr_set_tuner_gain(dev, 496);   
+    //rtlsdr_set_agc_mode(dev, 0);
 
     rtlsdr_set_freq_correction(dev, ppm);
     
-    rtlsdr_set_agc_mode(dev, 0);
-    rtlsdr_set_center_freq(dev, freq);
-    rtlsdr_set_sample_rate(dev, BIGSAMPLERATE);
+    
     rtlsdr_reset_buffer(dev);
 
     fprintf(stderr, "Gain reported by device: %.2f\n",
