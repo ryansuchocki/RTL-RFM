@@ -129,7 +129,22 @@ int main (int argc, char **argv) {
 
 	//reader_start();
 
-	rtlsdr_read_async(dev, reader_callback, NULL, 0, 0);
+	//rtlsdr_read_async(dev, reader_callback, NULL, 0, 0);
+
+	while(run) {
+		int n_read = 0;
+
+		uint8_t buffer[262144]
+
+		rtlsdr_read_sync(dev, buffer, 262144, &n_read);
+
+		for (int i = 0; i < n_read; i+=2) {
+			downsampler(buffer[i], buffer[i+1]);
+
+			fsk_decode(fm_demod(getI(), getQ()), fm_magnitude);
+			if (bit >= 0) rfm_decode(bit);
+		}
+	}
 
 	/*while(run) {
 		pthread_mutex_lock(&data_mutex);
