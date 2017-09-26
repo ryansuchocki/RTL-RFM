@@ -1,4 +1,5 @@
-rtl_rfm # executable
+rtl_rfm
+junk/*
 
 # Prerequisites
 *.d
