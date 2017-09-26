@@ -38,7 +38,7 @@ static void sighandler(int signum) {
 	if (signum == SIGINT) {
 		reader_stop();
 
-		
+
 		fprintf(stderr, "\n>> Received SIGINT\n");
 		run = 0;
 	}    
@@ -119,7 +119,7 @@ int main (int argc, char **argv) {
 			exit(EXIT_FAILURE);
 	}
 
-	signal(SIGINT, sighandler);
+	//signal(SIGINT, sighandler);
 
 	hardware_init();
 
