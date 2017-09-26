@@ -45,7 +45,9 @@ static void sighandler(int signum) {
 void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
     uint32_t bytes = len;
-    if (bytes > 262144) bytes = 262144;
+    //if (bytes > 262144) bytes = 262144;
+
+    fprintf(stderr, "%i\t", len);
 
     data_len = 0; // bytes / DOWNSAMPLE / 2;
     uint32_t j = 0;
