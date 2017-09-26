@@ -142,8 +142,13 @@ int main (int argc, char **argv) {
 			int8_t thisI = ((uint8_t) buffer[i]) - 128;
 			int8_t thisQ = ((uint8_t) buffer[i+1]) - 128;
 
-			if(downsampler(thisI, thisQ)) {
-				int8_t bit = fsk_decode(fm_demod(getI(), getQ()), fm_magnitude);
+			if (downsampler(thisI, thisQ)) {
+				int8_t di = getI();
+				int8_t dq = getQ();
+
+				int16_t fm = fm_demod(di, dq);
+
+				int8_t bit = fsk_decode(fm, fm_magnitude);
 				if (bit >= 0) rfm_decode(bit);
 			}
 
