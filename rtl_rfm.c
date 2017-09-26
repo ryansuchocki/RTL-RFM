@@ -134,7 +134,7 @@ int main (int argc, char **argv) {
 	while(run) {
 		int n_read = 0;
 
-		uint8_t buffer[262144]
+		uint8_t buffer[262144];
 
 		int r = rtlsdr_read_sync(dev, buffer, 262144, &n_read);
 
