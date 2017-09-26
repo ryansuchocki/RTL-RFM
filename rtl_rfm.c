@@ -248,8 +248,23 @@ int verbose_device_search(char *s)
 
 
 
+void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
+	for (int j = 0; j < len; j = j + 2) {
+		
+		int8_t i = ((uint8_t) buf[j]) - 128;
+		int8_t q = ((uint8_t) buf[j+1]) - 128;
 
+		if (downsampler(i, q)) {
+			int8_t di = getI();
+			int8_t dq = getQ();
 
+			int16_t fm = fm_demod(di, dq);
+
+			int8_t bit = fsk_decode(fm, fm_magnitude);
+			if (bit >= 0) rfm_decode(bit);
+		}
+	}
+}
 
 
 
@@ -330,31 +345,10 @@ int main (int argc, char **argv) {
 	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dev);
 
+	r = rtlsdr_read_async(dev, rtlsdr_callback, null, 0, 262144);
 
+	while (run) {
 
-	while( run  ) {
-		uint8_t buffer[262144];
-		int n_read = 0;
-		int rr = rtlsdr_read_sync(dev, buffer, 262144, &n_read);
-
-		for (int j = 0; j < n_read; j = j + 2) {
-			int8_t i = ((uint8_t) buffer[j]) - 128;
-			int8_t q = ((uint8_t) buffer[j+1]) - 128;
-
-			if (downsampler(i, q)) {
-				int8_t di = getI();
-				int8_t dq = getQ();
-
-				int16_t fm = fm_demod(di, dq);
-
-				int8_t bit = fsk_decode(fm, fm_magnitude);
-				if (bit >= 0) rfm_decode(bit);
-			}
-		}
-
-
-
-		
 	}
 
 	fsk_cleanup();
