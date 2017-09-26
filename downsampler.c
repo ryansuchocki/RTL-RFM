@@ -27,12 +27,14 @@ void downsampler_init() {
 }
 
 bool downsampler(int8_t newi, int8_t newq) {
-	icount -= ibuf[bufi];
-	qcount -= qbuf[bufi];
-	ibuf[bufi] = newi;
-	qbuf[bufi] = newq;
+	if (bufi == 0) {
+		icount = 0;
+		qcount = 0;
+	}
+	
 	icount += newi;
 	qcount += newq;
+
 	bufi = (bufi + 1) % DOWNSAMPLE;
 
 	return (bufi == 0);
