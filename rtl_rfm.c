@@ -66,7 +66,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
         j++;
 
-        /*if (j == DOWNSAMPLE) {
+        if (j == DOWNSAMPLE) {
             int16_t avgI = countI / DOWNSAMPLE;
             int16_t avgQ = countQ / DOWNSAMPLE;
 
@@ -82,7 +82,7 @@ void reader_callback(unsigned char *buf, uint32_t len, void *ctx) {
             j = 0;
 
             data_len++;
-        }*/
+        }
     }
 
     //memcpy(data, buf, data_len);
