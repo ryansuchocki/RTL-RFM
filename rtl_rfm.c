@@ -36,6 +36,9 @@ int gain = /*999999;*/ 496;
 
 static void sighandler(int signum) {
 	if (signum == SIGINT) {
+		reader_stop();
+
+		
 		fprintf(stderr, "\n>> Received SIGINT\n");
 		run = 0;
 	}    
