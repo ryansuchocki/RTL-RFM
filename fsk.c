@@ -146,7 +146,7 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 	//thissample = lopass(hipass((int16_t) (b1 | (b2<<8)) /*/ 2*/)); // make headroom for filter offset. Unnecessary! filter always moves it towards zero!
-	thissample = /*lopass(hipass(*/sample/*))*/;
+	thissample = lopass(hipass(sample));
 
 	mavg = moving_average(thissample);
 
