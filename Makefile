@@ -1,7 +1,8 @@
 TARGET = rtl_rfm
-LIBS = -lm
+LIBS = -lm $(shell pkg-config --libs librtlsdr)
 CC = gcc
-CFLAGS = -g -Wall -O3
+CFLAGS = -g -Wall -O3 -W $(shell pkg-config --cflags librtlsdr)
+
 
 .PHONY: default all clean
 
