@@ -129,7 +129,7 @@ int main (int argc, char **argv) {
 
 	//reader_start();
 
-	rtlsdr_read_async(dev, reader_callback, NULL, 0, 0);
+	rtlsdr_read_async(dev, reader_callback, NULL, 0, 512);
 
 	/*while(run) {
 		pthread_mutex_lock(&data_mutex);
