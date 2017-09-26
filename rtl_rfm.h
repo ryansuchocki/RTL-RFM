@@ -2,7 +2,7 @@
 #define _MAIN_H_GUARD
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 128
+#define DOWNSAMPLE 64
 
 static volatile int run = 1;
 
