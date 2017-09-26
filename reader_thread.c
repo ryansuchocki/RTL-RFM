@@ -25,7 +25,7 @@ void reader_init(void) {
 
 
 void *reader_entry(void *arg) {
-    rtlsdr_read_async(dev, reader_callback, NULL, 0, 0);
+    rtlsdr_read_async(dev, reader_callback, NULL, 0, 512);
 
     return NULL;
 }
