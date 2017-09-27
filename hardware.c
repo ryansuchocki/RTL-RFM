@@ -59,46 +59,7 @@ int verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate)
 	return r;
 }
 
-int verbose_direct_sampling(rtlsdr_dev_t *dev, int on)
-{
-	int r;
-	r = rtlsdr_set_direct_sampling(dev, on);
-	if (r != 0) {
-		fprintf(stderr, "WARNING: Failed to set direct sampling mode.\n");
-		return r;
-	}
-	if (on == 0) {
-		fprintf(stderr, "Direct sampling mode disabled.\n");}
-	if (on == 1) {
-		fprintf(stderr, "Enabled direct sampling mode, input 1/I.\n");}
-	if (on == 2) {
-		fprintf(stderr, "Enabled direct sampling mode, input 2/Q.\n");}
-	return r;
-}
 
-int verbose_offset_tuning(rtlsdr_dev_t *dev)
-{
-	int r;
-	r = rtlsdr_set_offset_tuning(dev, 1);
-	if (r != 0) {
-		fprintf(stderr, "WARNING: Failed to set offset tuning.\n");
-	} else {
-		fprintf(stderr, "Offset tuning mode enabled.\n");
-	}
-	return r;
-}
-
-int verbose_auto_gain(rtlsdr_dev_t *dev)
-{
-	int r;
-	r = rtlsdr_set_tuner_gain_mode(dev, 0);
-	if (r != 0) {
-		fprintf(stderr, "WARNING: Failed to set tuner gain.\n");
-	} else {
-		fprintf(stderr, "Tuner gain set to automatic.\n");
-	}
-	return r;
-}
 
 int verbose_gain_set(rtlsdr_dev_t *dev, int gain)
 {
@@ -140,72 +101,9 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev)
 	return r;
 }
 
-int verbose_device_search(char *s)
-{
-	int i, device_count, device, offset;
-	char *s2;
-	char vendor[256], product[256], serial[256];
-	device_count = rtlsdr_get_device_count();
-	if (!device_count) {
-		fprintf(stderr, "No supported devices found.\n");
-		return -1;
-	}
-	fprintf(stderr, "Found %d device(s):\n", device_count);
-	for (i = 0; i < device_count; i++) {
-		rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-		fprintf(stderr, "  %d:  %s, %s, SN: %s\n", i, vendor, product, serial);
-	}
-	fprintf(stderr, "\n");
-	/* does string look like raw id number */
-	device = (int)strtol(s, &s2, 0);
-	if (s2[0] == '\0' && device >= 0 && device < device_count) {
-		fprintf(stderr, "Using device %d: %s\n",
-			device, rtlsdr_get_device_name((uint32_t)device));
-		return device;
-	}
-	/* does string exact match a serial */
-	for (i = 0; i < device_count; i++) {
-		rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-		if (strcmp(s, serial) != 0) {
-			continue;}
-		device = i;
-		fprintf(stderr, "Using device %d: %s\n",
-			device, rtlsdr_get_device_name((uint32_t)device));
-		return device;
-	}
-	/* does string prefix match a serial */
-	for (i = 0; i < device_count; i++) {
-		rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-		if (strncmp(s, serial, strlen(s)) != 0) {
-			continue;}
-		device = i;
-		fprintf(stderr, "Using device %d: %s\n",
-			device, rtlsdr_get_device_name((uint32_t)device));
-		return device;
-	}
-	/* does string suffix match a serial */
-	for (i = 0; i < device_count; i++) {
-		rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-		offset = strlen(serial) - strlen(s);
-		if (offset < 0) {
-			continue;}
-		if (strncmp(s, serial+offset, strlen(s)) != 0) {
-			continue;}
-		device = i;
-		fprintf(stderr, "Using device %d: %s\n",
-			device, rtlsdr_get_device_name((uint32_t)device));
-		return device;
-	}
-	fprintf(stderr, "No matching devices found.\n");
-	return -1;
-}
-
-
 
 void hw_init() {
-	int dev_index = verbose_device_search("0");
-
-	if ((rtlsdr_open(&dev, (uint32_t)dev_index)) < 0) {
+	if ((rtlsdr_open(&dev, 0) < 0) {
 		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
 		exit(1);
 	}
