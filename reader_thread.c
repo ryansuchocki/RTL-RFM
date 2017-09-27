@@ -17,7 +17,7 @@
 #include "downsampler.h"
 #include "fm.h"
 
-void reader_init(void) {
+void reader_init() {
     pthread_mutex_init(&data_mutex, NULL);
     pthread_cond_init(&data_cond, NULL);
    
