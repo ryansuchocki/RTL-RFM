@@ -28,7 +28,7 @@ void fsk_init() {
 
 	if (!quiet) printf(">> Setting filters at '%.2fHz < signal < %.2fHz' (hipass size: %i, lopass size: %i, window size: %i)\n", fc, fc2, filtersize, filter2size, windowsize);
 
-	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n\n", (float)samplerate/1000.0, (float)freq/1000000.0);
+	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
 	filter = malloc(sizeof(int16_t) * filtersize);
 	filter2 = malloc(sizeof(int16_t) * filter2size);

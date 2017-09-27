@@ -83,7 +83,7 @@ int main (int argc, char **argv) {
 
 
 
-	if (!quiet) printf(">> STARTING RTL_FM ...\n\n");
+	if (!quiet) printf(">> STARTING RTL_RFM ...\n\n");
 
 	fsk_init();
 	hw_init();
