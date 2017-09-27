@@ -12,7 +12,7 @@ int hw_init() {
 	if (rtlsdr_set_freq_correction(dev, ppm) < 0) return -6;
 	if (rtlsdr_reset_buffer(dev) < 0) return -7;
 
-	if (!quiet) printf(">> RTL_RFM READY\n");
+	if (!quiet) printf(">> RTL_RFM READY\n\n");
 
 
 	return 0;
