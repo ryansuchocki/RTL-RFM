@@ -322,6 +322,7 @@ int main (int argc, char **argv) {
     	pthread_mutex_lock(&data_mutex);
         while (!data_ready) {
             pthread_cond_wait(&data_cond, &data_mutex);
+            fprintf(stderr, "?");
         }
         //pthread_mutex_unlock(&data_mutex);
 
