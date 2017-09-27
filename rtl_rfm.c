@@ -41,7 +41,7 @@ int squelch_count = 0;
 
 bool squelch(int32_t magnitude_squared) {
 	if (squelch_state) {
-		if (fm_magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
+		if (magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
 			squelch_count--;
 			if(squelch_count <= 0) {
 				squelch_state = false;
@@ -55,7 +55,7 @@ bool squelch(int32_t magnitude_squared) {
 
 		return true;
 	} else {
-		if (fm_magnitude_squared > (SQUELCH_THRESH * SQUELCH_THRESH)) {
+		if (magnitude_squared > (SQUELCH_THRESH * SQUELCH_THRESH)) {
 			squelch_count++;
 			if (squelch_count >= SQUELCH_NUM) {
 				squelch_state = true;
