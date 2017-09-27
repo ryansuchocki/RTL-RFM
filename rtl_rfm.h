@@ -15,7 +15,7 @@
 #include <rtl-sdr.h>
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 32
+#define DOWNSAMPLE 64
 
 static volatile int run = 1;
 
