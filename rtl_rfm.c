@@ -303,7 +303,7 @@ int main (int argc, char **argv) {
 			exit(EXIT_FAILURE);
 	}
 
-	signal(SIGINT, intHandler);
+	//signal(SIGINT, intHandler);
 
 	fsk_init();
 
