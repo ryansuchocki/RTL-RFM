@@ -35,7 +35,7 @@ FILE *rtlstream = NULL;
 
 
 
-rtlsdr_dev_t *dev;
+rtlsdr_dev_t *dev = NULL;
 
 
 
@@ -320,36 +320,16 @@ int main (int argc, char **argv) {
 
 	int dev_index = verbose_device_search("0");
 
-	dev = NULL;
-
-	int r = rtlsdr_open(&dev, (uint32_t)dev_index);
-	if (r < 0) {
+	if ((rtlsdr_open(&dev, (uint32_t)dev_index)) < 0) {
 		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
 		exit(1);
 	}
 
-		/* Set the frequency */
+	// Set freq before sample rate to avoid "PLL NOT LOCKED"
 	verbose_set_frequency(dev, freq);
-
-	/* Set the sample rate */
 	verbose_set_sample_rate(dev, BIGSAMPLERATE);
-
-	/* Set the frequency */
-	verbose_set_frequency(dev, freq);
-
-	if (0 == gain) {
-		 /* Enable automatic gain */
-		verbose_auto_gain(dev);
-	} else {
-		/* Enable manual gain */
-		int thegain = nearest_gain(dev, 500);
-		verbose_gain_set(dev, thegain);
-	}
-
+	verbose_gain_set(dev, nearest_gain(dev, 500));
 	verbose_ppm_set(dev, ppm);
-
-
-	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dev);
 
 	r = rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
