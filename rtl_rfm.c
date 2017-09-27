@@ -261,7 +261,10 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			int16_t fm = fm_demod(di, dq);
 
 			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) rfm_decode(bit);
+			if (bit >= 0) {
+				fprintf(stderr, "<BIT %i>", bit);
+				rfm_decode(bit);
+			}
 		}
 	}
 }
