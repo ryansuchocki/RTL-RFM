@@ -239,7 +239,7 @@ int verbose_device_search(char *s)
 
 
 
-
+volatile int32_t mag;
 
 #define SQUELCH_THRESH 10
 #define SQUELCH_NUM 16
@@ -260,9 +260,9 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		n++;
 
 		if (n == DOWNSAMPLE) {
-			
+			mag = countI + countQ;
 
-			int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
+			//int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
 
 			// if (squelch_state) {
 			// 	/*int8_t avgI = countI / DOWNSAMPLE;
