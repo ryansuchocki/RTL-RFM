@@ -16,6 +16,7 @@ extern int errno;
 
 #include "rtl_rfm.h"
 #include "hardware.h"
+#include "squelch.h"
 #include "fm.h"
 #include "fsk.h"
 #include "rfm_protocol.h"
@@ -32,46 +33,7 @@ int baudrate = 4800;
 
 
 
-
-#define SQUELCH_THRESH 10
-#define SQUELCH_NUM 16
-
-bool squelch_state = false; // 0 is squelched, 1 is receiving
-int squelch_count = 0;
-
-bool squelch(int32_t magnitude_squared) {
-	if (squelch_state) {
-		if (magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
-			squelch_count--;
-			if(squelch_count <= 0) {
-				squelch_state = false;
-
-				fprintf(stderr, " << Carrier Lost! >>\n");
-				rfm_reset();
-			}
-		} else {
-			squelch_count = SQUELCH_NUM;
-		}
-
-		return true;
-	} else {
-		if (magnitude_squared > (SQUELCH_THRESH * SQUELCH_THRESH)) {
-			squelch_count++;
-			if (squelch_count >= SQUELCH_NUM) {
-				squelch_state = true;
-
-				fprintf(stderr, " << Carrier Found! >>\n");
-			}
-		} else {
-			squelch_count = 0;
-		}
-
-		return false;
-	}
-}
-
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
-
 	for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
 		uint16_t countI = 0;
 		uint16_t countQ = 0;
