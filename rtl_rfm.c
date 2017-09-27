@@ -36,8 +36,39 @@ int baudrate = 4800;
 #define SQUELCH_THRESH 10
 #define SQUELCH_NUM 16
 
-uint8_t squelch_state = 0; // 0 is squelched, 1 is receiving
+bool squelch_state = false; // 0 is squelched, 1 is receiving
 int squelch_count = 0;
+
+bool squelch(int32_t magnitude_squared) {
+	if (squelch_state) {
+		if (fm_magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
+			squelch_count--;
+			if(squelch_count <= 0) {
+				squelch_state = false;
+
+				fprintf(stderr, " << Carrier Lost! >>\n");
+				rfm_reset();
+			}
+		} else {
+			squelch_count = SQUELCH_NUM;
+		}
+
+		return true;
+	} else {
+		if (fm_magnitude_squared > (SQUELCH_THRESH * SQUELCH_THRESH)) {
+			squelch_count++;
+			if (squelch_count >= SQUELCH_NUM) {
+				squelch_state = true;
+
+				fprintf(stderr, " << Carrier Found! >>\n");
+			}
+		} else {
+			squelch_count = 0;
+		}
+
+		return false;
+	}
+}
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
@@ -55,37 +86,11 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 		int32_t fm_magnitude_squared = avgI * avgI + avgQ * avgQ;
 
-		if (squelch_state) {
-
-			// Process Sample
-				int16_t fm = fm_demod(avgI, avgQ);
-				int8_t bit = fsk_decode(fm, sqrt(fm_magnitude_squared));
-				if (bit >= 0) {
-					rfm_decode(bit);
-				}
-			// End of Sample Processing
-
-			if (fm_magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
-				squelch_count--;
-				if(squelch_count <= 0) {
-					squelch_state = 0;
-
-					fprintf(stderr, " << Carrier Lost! >>\n");
-					rfm_reset();
-				}
-			} else {
-				squelch_count = SQUELCH_NUM;
-			}
-		} else {
-			if (fm_magnitude_squared > (SQUELCH_THRESH * SQUELCH_THRESH)) {
-				squelch_count++;
-				if (squelch_count >= SQUELCH_NUM) {
-					squelch_state = 1;
-
-					fprintf(stderr, " << Carrier Found! >>\n");
-				}
-			} else {
-				squelch_count = 0;
+		if (squelch(fm_magnitude_squared)) {
+			int16_t fm = fm_demod(avgI, avgQ);
+			int8_t bit = fsk_decode(fm, sqrt(fm_magnitude_squared));
+			if (bit >= 0) {
+				rfm_decode(bit);
 			}
 		}
 	}
