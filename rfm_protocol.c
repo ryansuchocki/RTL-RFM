@@ -87,12 +87,11 @@ void process_byte(uint8_t thebyte) {
 	}
 }
 
+uint8_t thisbyte = 0;
+uint32_t amble = 0;
 
 void rfm_decode(uint8_t thebit) {
 	if (debugplot) putchar('C'); 
-
-	static uint8_t thisbyte = 0;
-	static uint32_t amble = 0;
 
 	if (bitphase >= 0) {
 		thisbyte = (thisbyte << 1) | (thebit & 0b1);
@@ -126,4 +125,11 @@ void rfm_decode(uint8_t thebit) {
 			bytesexpected = -1; // tell the above section to expect length byte
 		}
 	}
+}
+
+void rfm_reset() {
+	bitphase = -1; // search for new preamble
+	hold = false; // reset offset hold.
+	thisbyte = 0;
+	amble = 0;
 }

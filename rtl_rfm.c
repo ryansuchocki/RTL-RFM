@@ -278,6 +278,9 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					squelch_count--;
 					if(squelch_count <= 0) {
 						squelch_state = 0;
+
+						fprintf(stderr, "\n>> Carrier Lost!\n");
+						rfm_reset();
 					}
 				} else {
 					if (squelch_count < SQUELCH_NUM) {
