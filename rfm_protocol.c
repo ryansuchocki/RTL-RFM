@@ -71,7 +71,7 @@ void process_byte(uint8_t thebyte) {
 	if (bytesexpected == 0) {
 		crc ^= CRC_POST;
 		if (crc == thecrc) {
-			if (!quiet) printf("CRC OK, <");
+			if (!quiet) printf("CRC OK, \t<");
 			print_sanitize(packet_buffer, packet_bi);
 			if (!quiet) printf(">");
 
