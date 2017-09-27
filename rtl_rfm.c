@@ -256,12 +256,8 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 	for (uint32_t j = 0; j < len; j = j + 2) {
 
-		int8_t i = ((uint8_t) buf[j]) - 128;
-		int8_t q = ((uint8_t) buf[j+1]) - 128;
-
-		countI += i;
-		countQ += q;
-
+		countI += (int8_t) (((uint8_t) buf[j]) - 128);
+		countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
 		n++;
 
 		if (n == DOWNSAMPLE) {
