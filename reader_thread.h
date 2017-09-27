@@ -1,11 +1,8 @@
 #ifndef _RT_H_GUARD
 #define _RT_H_GUARD
 
-void reader_init();
 void reader_start();
 void reader_stop();
-
-void reader_callback(unsigned char *buf, uint32_t len, void *ctx);
 
 pthread_t reader_thread;
 pthread_mutex_t data_mutex;     /* Mutex to synchronize buffer access. */
