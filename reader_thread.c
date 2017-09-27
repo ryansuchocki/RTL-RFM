@@ -14,6 +14,9 @@
 #include "rtl_rfm.h"
 #include "reader_thread.h"
 
+#include "downsampler.h"
+#include "fm.h"
+
 void reader_init(void) {
     pthread_mutex_init(&data_mutex, NULL);
     pthread_cond_init(&data_cond, NULL);
