@@ -63,12 +63,12 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
     data_len = k;
 
-    fprintf(stderr, ",");
 
     data_ready = 1;
     pthread_cond_signal(&data_cond);
-    pthread_mutex_unlock(&data_mutex);
-    pthread_cond_signal(&data_cond);
+    
+
+    fprintf(stderr, "%i", pthread_mutex_unlock(&data_mutex));
 }
 
 void *reader_entry(void *arg) {
