@@ -314,7 +314,7 @@ int main (int argc, char **argv) {
 
 	//rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
-	reader_init()
+	reader_init();
 
 	reader_start();
 
