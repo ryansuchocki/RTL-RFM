@@ -64,7 +64,7 @@ int16_t fm_demod(int8_t i, int8_t q) {
 
 	int16_t xlp = atan2_int16(ppi, ppr);
 	
-	fm_magnitude = sqrt(i * i + q * q);
+	fm_magnitude = /*sqrt*/(i * i + q * q);
 
 	pi = i;
 	pq = q;
