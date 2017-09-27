@@ -102,10 +102,10 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev)
 }
 
 
-void hw_init() {
+int hw_init() {
 	if (rtlsdr_open(&dev, 0) < 0) {
 		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", 0);
-		exit(1);
+		return -1;
 	}
 	
 	verbose_set_frequency(dev, freq); // Set freq before sample rate to avoid "PLL NOT LOCKED"

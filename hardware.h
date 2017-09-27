@@ -3,7 +3,7 @@
 
 #include <rtl-sdr.h>
 
-void hw_init();
+int hw_init();
 
 rtlsdr_dev_t *dev;
 
