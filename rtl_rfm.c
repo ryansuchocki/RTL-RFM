@@ -286,7 +286,7 @@ int main (int argc, char **argv) {
 			exit(EXIT_FAILURE);
 	}
 
-	signal(SIGINT, intHandler);
+	//signal(SIGINT, intHandler);
 
 	fsk_init();
 
@@ -325,6 +325,8 @@ int main (int argc, char **argv) {
             pthread_cond_wait(&data_cond, &data_mutex);
             continue;
         }
+
+        fprintf(stderr, ".");
 
         int8_t mydata[2048];
         uint16_t mydatalen = data_len;
