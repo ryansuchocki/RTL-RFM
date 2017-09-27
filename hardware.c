@@ -1,8 +1,6 @@
 #include "rtl_rfm.h"
 #include "hardware.h"
 
-#include <rtl-sdr.h>
-
 
 
 rtlsdr_dev_t *dev = NULL;

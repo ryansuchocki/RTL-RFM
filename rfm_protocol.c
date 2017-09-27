@@ -1,6 +1,5 @@
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
-#include "fsk.h" // for bool hold
 
 int bytesexpected = 0;
 int bitphase = -1;

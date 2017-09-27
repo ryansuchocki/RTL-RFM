@@ -1,6 +1,7 @@
 #ifndef _MAIN_H_GUARD
 #define _MAIN_H_GUARD
 
+// Project-wide includes
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -11,6 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <signal.h>
+#include <rtl-sdr.h>
 
 #define BIGSAMPLERATE 2457600
 #define DOWNSAMPLE 64
@@ -23,5 +25,9 @@ int freq;
 int gain;
 int ppm;
 int baudrate;
+bool hold;
+int samplerate;
+int16_t latestoffset;
+int16_t offsethold;
 
 #endif

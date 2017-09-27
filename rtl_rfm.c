@@ -2,13 +2,12 @@
 // R. Suchocki
 
 #include "rtl_rfm.h"
+
 #include "hardware.h"
 #include "squelch.h"
 #include "fm.h"
 #include "fsk.h"
 #include "rfm_protocol.h"
-
-#include <rtl-sdr.h>
 
 bool quiet = false;
 bool debugplot = false;
