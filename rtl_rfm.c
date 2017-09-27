@@ -335,8 +335,7 @@ int main (int argc, char **argv) {
         memcpy(mydata, data, data_len);
 
         data_ready = 0;
-        //pthread_cond_signal(&data_cond);
-
+        pthread_cond_signal(&data_cond);
         pthread_mutex_unlock(&data_mutex);
         
         for (int i = 0; i < mydatalen; i++) {
