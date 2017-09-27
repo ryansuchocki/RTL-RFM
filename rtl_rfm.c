@@ -249,7 +249,7 @@ int verbose_device_search(char *s)
 
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
-	for (int j = 0; j < len; j = j + 2) {
+	for (uint32_t j = 0; j < len; j = j + 2) {
 
 		int8_t i = ((uint8_t) buf[j]) - 128;
 		int8_t q = ((uint8_t) buf[j+1]) - 128;
