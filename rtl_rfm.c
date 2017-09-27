@@ -332,7 +332,7 @@ int main (int argc, char **argv) {
 	verbose_ppm_set(dev, ppm);
 	verbose_reset_buffer(dev);
 
-	r = rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
+	rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
 	while (run) {
 
