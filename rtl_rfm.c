@@ -261,55 +261,55 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
 		n++;
 
-		if (n == DOWNSAMPLE) {
+		// if (n == DOWNSAMPLE) {
 			
 
-			int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
+		// 	int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
 
-			if (squelch_state) {
-				/*int8_t avgI = countI / DOWNSAMPLE;
-				int8_t avgQ = countQ / DOWNSAMPLE;
-				int16_t fm = fm_demod(avgI, avgQ);
-				int8_t bit = fsk_decode(fm, fm_magnitude);
-				if (bit >= 0) {
-					//fprintf(stderr, "[%i]", bit);
-					rfm_decode(bit);
-				}*/
+		// 	if (squelch_state) {
+		// 		/*int8_t avgI = countI / DOWNSAMPLE;
+		// 		int8_t avgQ = countQ / DOWNSAMPLE;
+		// 		int16_t fm = fm_demod(avgI, avgQ);
+		// 		int8_t bit = fsk_decode(fm, fm_magnitude);
+		// 		if (bit >= 0) {
+		// 			//fprintf(stderr, "[%i]", bit);
+		// 			rfm_decode(bit);
+		// 		}*/
 
-				if (magnitude < (SQUELCH_THRESH * DOWNSAMPLE * DOWNSAMPLE * 2)) {
-					squelch_count--;
-					if(squelch_count <= 0) {
-						squelch_state = 0;
+		// 		if (magnitude < (SQUELCH_THRESH * DOWNSAMPLE * DOWNSAMPLE * 2)) {
+		// 			squelch_count--;
+		// 			if(squelch_count <= 0) {
+		// 				squelch_state = 0;
 
-						fprintf(stderr, " << Carrier Lost! >>\n");
-						rfm_reset();
-					}
-				} else {
-					if (squelch_count < SQUELCH_NUM) {
-						squelch_count++;
-					}
-				}
-			} else {
-				if (magnitude > (SQUELCH_THRESH * DOWNSAMPLE * DOWNSAMPLE * 2)) {
-					squelch_count++;
-					if (squelch_count >= SQUELCH_NUM) {
-						squelch_state = 1;
+		// 				fprintf(stderr, " << Carrier Lost! >>\n");
+		// 				rfm_reset();
+		// 			}
+		// 		} else {
+		// 			if (squelch_count < SQUELCH_NUM) {
+		// 				squelch_count++;
+		// 			}
+		// 		}
+		// 	} else {
+		// 		if (magnitude > (SQUELCH_THRESH * DOWNSAMPLE * DOWNSAMPLE * 2)) {
+		// 			squelch_count++;
+		// 			if (squelch_count >= SQUELCH_NUM) {
+		// 				squelch_state = 1;
 
-						fprintf(stderr, " << Carrier Found! >>\n");
-					}
-				} else {
-					if (squelch_count > 0) {
-						squelch_count--;
-					}
-				}
-			}
+		// 				fprintf(stderr, " << Carrier Found! >>\n");
+		// 			}
+		// 		} else {
+		// 			if (squelch_count > 0) {
+		// 				squelch_count--;
+		// 			}
+		// 		}
+		// 	}
 
 			
 
-			n = 0;
-			countI = 0;
-			countQ = 0;
-		}
+		// 	n = 0;
+		// 	countI = 0;
+		// 	countQ = 0;
+		// }
 
 		
 	}
