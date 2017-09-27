@@ -328,6 +328,9 @@ int main (int argc, char **argv) {
 		exit(1);
 	}
 
+		/* Set the frequency */
+	verbose_set_frequency(dev, freq);
+
 	/* Set the sample rate */
 	verbose_set_sample_rate(dev, BIGSAMPLERATE);
 
