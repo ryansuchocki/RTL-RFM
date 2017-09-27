@@ -63,18 +63,17 @@ void intHandler(int dummy) {
 }
 
 int main (int argc, char **argv) {
+	char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
+		"\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
+		"Option flags:\n"
+		"  -h    Show this message\n"
+		"  -q    Quiet. Only output good messages\n"
+		"  -d    Show Debug Plot\n"
+		"  -f    Frequency [869412500]\n"
+		"  -g    Gain [50]\n"
+		"  -p    PPM error [47]\n";
 
 	int c;
-
-	char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
-			"\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
-			"Option flags:\n"
-			"  -h    Show this message\n"
-			"  -q    Quiet. Only output good messages\n"
-			"  -d    Show Debug Plot\n"
-			"  -f    Frequency [869412500]\n"
-			"  -g    Gain [50]\n"
-			"  -p    PPM error [47]\n";
 
 	while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1) {
 		switch (c)	{
@@ -85,7 +84,7 @@ int main (int argc, char **argv) {
 			case 'g':	gain = atoi(optarg);								break;
 			case 'p':	ppm = atoi(optarg);									break;
 			case '?':
-			default: fprintf(stderr, ">> Unknown Argument: %c\n", c); exit(EXIT_FAILURE);
+			default: exit(EXIT_FAILURE);
 		}
 	}
 
