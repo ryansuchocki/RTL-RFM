@@ -248,16 +248,12 @@ int squelch_count = 0;
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
-	//int n = 0;
-	//int16_t countI = 0;
-	//int16_t countQ = 0;
-
 	for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
 		uint16_t countI = 0;
 		uint16_t countQ = 0;
 
 		for (uint32_t j = k; j < k+(DOWNSAMPLE*2); j+=2) {
-			countI +=  ((uint8_t) buf[j]);
+			countI += ((uint8_t) buf[j]);
 			countQ += ((uint8_t) buf[j+1]);
 		}
 
@@ -267,12 +263,14 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		int32_t fm_magnitude = sqrt(avgI * avgI + avgQ * avgQ);
 
 		if (squelch_state) {
-			int16_t fm = fm_demod(avgI, avgQ);
-			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) {
-				//fprintf(stderr, "[%i]", bit);
-				rfm_decode(bit);
-			}
+
+			// Process Sample
+				int16_t fm = fm_demod(avgI, avgQ);
+				int8_t bit = fsk_decode(fm, fm_magnitude);
+				if (bit >= 0) {
+					rfm_decode(bit);
+				}
+			// End of Sample Processing
 
 			if (fm_magnitude < SQUELCH_THRESH) {
 				squelch_count--;
@@ -283,9 +281,11 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					rfm_reset();
 				}
 			} else {
-				if (squelch_count < SQUELCH_NUM) {
-					squelch_count++;
-				}
+				// if (squelch_count < SQUELCH_NUM) {
+				// 	squelch_count++;
+				// }
+
+				squelch_count = SQUELCH_NUM;
 			}
 		} else {
 			if (fm_magnitude > SQUELCH_THRESH) {
@@ -296,70 +296,14 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					fprintf(stderr, " << Carrier Found! >>\n");
 				}
 			} else {
-				if (squelch_count > 0) {
-					squelch_count--;
-				}
+				// if (squelch_count > 0) {
+				// 	squelch_count--;
+				// }
+
+				squelch_count = 0;
 			}
 		}
 	}
-
-	// for (uint32_t j = 0; j < len; j = j + 2) {
-
-	// 	countI += (int8_t) (((uint8_t) buf[j]) - 128);
-	// 	countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
-	// 	n++;
-
-	// 	if (n == DOWNSAMPLE) {
-	// 		int8_t avgI = countI / DOWNSAMPLE;
-	// 		int8_t avgQ = countQ / DOWNSAMPLE;
-
-	// 		int32_t fm_magnitude = sqrt(avgI * avgI + avgQ * avgQ);
-
-	// 		if (squelch_state) {
-	// 			int16_t fm = fm_demod(avgI, avgQ);
-	// 			int8_t bit = fsk_decode(fm, fm_magnitude);
-	// 			if (bit >= 0) {
-	// 				//fprintf(stderr, "[%i]", bit);
-	// 				rfm_decode(bit);
-	// 			}
-
-	// 			if (fm_magnitude < SQUELCH_THRESH) {
-	// 				squelch_count--;
-	// 				if(squelch_count <= 0) {
-	// 					squelch_state = 0;
-
-	// 					fprintf(stderr, " << Carrier Lost! >>\n");
-	// 					rfm_reset();
-	// 				}
-	// 			} else {
-	// 				if (squelch_count < SQUELCH_NUM) {
-	// 					squelch_count++;
-	// 				}
-	// 			}
-	// 		} else {
-	// 			if (fm_magnitude > SQUELCH_THRESH) {
-	// 				squelch_count++;
-	// 				if (squelch_count >= SQUELCH_NUM) {
-	// 					squelch_state = 1;
-
-	// 					fprintf(stderr, " << Carrier Found! >>\n");
-	// 				}
-	// 			} else {
-	// 				if (squelch_count > 0) {
-	// 					squelch_count--;
-	// 				}
-	// 			}
-	// 		}
-
-			
-
-	// 		n = 0;
-	// 		countI = 0;
-	// 		countQ = 0;
-	// 	}
-
-		
-	//}
 }
 
 
