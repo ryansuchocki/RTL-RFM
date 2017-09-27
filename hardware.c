@@ -104,7 +104,7 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev)
 
 void hw_init() {
 	if (rtlsdr_open(&dev, 0) < 0) {
-		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
+		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", 0);
 		exit(1);
 	}
 	
