@@ -52,7 +52,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
     fprintf(stderr, ",");
 
-    data_ready = true;
+    data_ready = 1;
     pthread_cond_signal(&data_cond);
     pthread_mutex_unlock(&data_mutex);
 }

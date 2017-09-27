@@ -333,8 +333,8 @@ int main (int argc, char **argv) {
 
         memcpy(mydata, data, data_len);
 
-        data_ready = false;
-        pthread_cond_signal(&data_cond);
+        data_ready = 0;
+        //pthread_cond_signal(&data_cond);
 
         pthread_mutex_unlock(&data_mutex);
         
