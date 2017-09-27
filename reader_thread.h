@@ -1,6 +1,7 @@
 #ifndef _RT_H_GUARD
 #define _RT_H_GUARD
 
+void reader_init();
 void reader_start();
 void reader_stop();
 

@@ -314,6 +314,10 @@ int main (int argc, char **argv) {
 
 	//rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
+	reader_init()
+
+	pthread_mutex_lock(&data_mutex);
+	
 	reader_start();
 
 	//pthread_mutex_lock(&data_mutex);

@@ -17,6 +17,15 @@
 #include "downsampler.h"
 #include "fm.h"
 
+void reader_init() {
+    pthread_mutex_init(&data_mutex, NULL);
+    pthread_cond_init(&data_cond, NULL);
+   
+    //memset(data,0,data_len);
+
+    data_ready = 0;
+}
+
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
     fprintf(stderr, "@");
@@ -69,10 +78,6 @@ void *reader_entry(void *arg) {
 }
 
 void reader_start() {
-    pthread_mutex_init(&data_mutex, NULL);
-    pthread_cond_init(&data_cond, NULL);
-    data_ready = 0;
-
     pthread_create(&reader_thread, NULL, reader_entry, NULL);
 }
 
