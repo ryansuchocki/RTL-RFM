@@ -23,7 +23,7 @@ void reader_init() {
    
     //memset(data,0,data_len);
 
-    data_ready = 1;
+    data_ready = 0;
 }
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
@@ -31,7 +31,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
     fprintf(stderr, "@");
 
     pthread_mutex_lock(&data_mutex);
-    while (data_ready)
+    while (data_ready == 1)
         pthread_cond_wait(&data_cond, &data_mutex);
     //pthread_mutex_unlock(&data_mutex);
 
