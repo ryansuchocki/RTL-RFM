@@ -264,7 +264,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		if (n == DOWNSAMPLE) {
 			
 
-			int32_t magnitude __attribute__((used)) = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
+			volatile int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
 
 			// if (squelch_state) {
 			// 	/*int8_t avgI = countI / DOWNSAMPLE;
