@@ -21,6 +21,9 @@ extern int errno;
 #include "rfm_protocol.h"
 
 #include <rtl-sdr.h>
+#include <pthread.h>
+
+#include "reader_thread.h"
 
 bool quiet = false;
 bool debugplot = false;
@@ -35,7 +38,6 @@ FILE *rtlstream = NULL;
 
 
 
-rtlsdr_dev_t *dev = NULL;
 
 
 
@@ -248,33 +250,11 @@ int verbose_device_search(char *s)
 
 
 
-void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
-	for (uint32_t j = 0; j < len; j = j + 2) {
-
-		int8_t i = ((uint8_t) buf[j]) - 128;
-		int8_t q = ((uint8_t) buf[j+1]) - 128;
-
-		if (downsampler(i, q)) {
-			int8_t di = getI();
-			int8_t dq = getQ();
-
-			int16_t fm = fm_demod(di, dq);
-
-			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) {
-				//fprintf(stderr, "[%i]", bit);
-				rfm_decode(bit);
-			}
-		}
-	}
-}
-
-
 
 
 void intHandler(int dummy) {
-    run = 0;
-    rtlsdr_cancel_async(dev);
+	run = 0;
+	reader_stop();
 }
 
 int main (int argc, char **argv) {
@@ -306,7 +286,7 @@ int main (int argc, char **argv) {
 			exit(EXIT_FAILURE);
 	}
 
-	//signal(SIGINT, intHandler);
+	signal(SIGINT, intHandler);
 
 	fsk_init();
 
@@ -332,11 +312,41 @@ int main (int argc, char **argv) {
 	verbose_ppm_set(dev, ppm);
 	verbose_reset_buffer(dev);
 
-	rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
+	//rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
-	while (run) {
+	reader_start();
 
-	}
+	pthread_mutex_lock(&data_mutex);
+
+    while(run) {
+    	pthread_mutex_lock(&data_mutex);
+
+        if (!data_ready) {
+            pthread_cond_wait(&data_cond, &data_mutex);
+            continue;
+        }
+
+        int8_t mydata[2048];
+        uint16_t mydatalen = data_len;
+
+        memcpy(mydata, data, data_len);
+
+        data_ready = false;
+        pthread_cond_signal(&data_cond);
+
+        pthread_mutex_unlock(&data_mutex);
+        
+        for (int i = 0; i < mydatalen; i++) {
+
+        	int8_t bit = fsk_decode(mydata[i], 0);
+
+	        if (bit >= 0) {
+	            //fprintf(stderr, "[%i]", bit);
+	            rfm_decode(bit);
+	        }
+        }
+        
+    }
 
 	fsk_cleanup();
 
