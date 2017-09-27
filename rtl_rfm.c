@@ -273,7 +273,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 				}
 			// End of Sample Processing
 
-			if (fm_magnitude < SQUELCH_THRESH_SQUARED) {
+			if (fm_magnitude_squared < SQUELCH_THRESH_SQUARED) {
 				squelch_count--;
 				if(squelch_count <= 0) {
 					squelch_state = 0;
@@ -289,7 +289,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 				squelch_count = SQUELCH_NUM;
 			}
 		} else {
-			if (fm_magnitude > SQUELCH_THRESH_SQUARED) {
+			if (fm_magnitude_squared > SQUELCH_THRESH_SQUARED) {
 				squelch_count++;
 				if (squelch_count >= SQUELCH_NUM) {
 					squelch_state = 1;
