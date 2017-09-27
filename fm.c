@@ -15,7 +15,7 @@ static inline int16_t abs16(int16_t value) {
 //     II  |  I      
 //  -------+------- x
 //    III  |  IV     
-//    /    |    \    
+//         |        
 #define TAU INT16_MAX * 2
 
 static inline int16_t atan2_int16(int16_t y, int16_t x) {
