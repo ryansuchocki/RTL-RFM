@@ -108,9 +108,9 @@ void rfm_decode(uint8_t thebit) {
 	if (bitphase < 0) {
 		amble = (amble << 1) | (thebit & 0b1);
 
-		// "AA2D4C" = 1010'1010'0010'1101'0100'1100
+		// "2D4C" = 0010'1101'0100'1100
 
-		if ((amble & 0x00FFFFFF) == 0x00AA2D4C) { // detect 1 preamble bytes followed by 2 sync bytes
+		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes
 			offsethold = latestoffset;
 			hold = true;
 
