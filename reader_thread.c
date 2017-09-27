@@ -61,6 +61,8 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
         }
     }
 
+    data_len = k;
+
     fprintf(stderr, ",");
 
     data_ready = 1;
