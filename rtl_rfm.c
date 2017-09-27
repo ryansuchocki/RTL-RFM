@@ -35,7 +35,7 @@ FILE *rtlstream = NULL;
 
 
 
-
+rtlsdr_dev_t *dev;
 
 
 
@@ -271,6 +271,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 void intHandler(int dummy) {
     run = 0;
+    rtlsdr_cancel_async(dev);
 }
 
 int main (int argc, char **argv) {
@@ -316,7 +317,7 @@ int main (int argc, char **argv) {
 
 	int dev_index = verbose_device_search("0");
 
-	rtlsdr_dev_t *dev = NULL;
+	dev = NULL;
 
 	int r = rtlsdr_open(&dev, (uint32_t)dev_index);
 	if (r < 0) {
