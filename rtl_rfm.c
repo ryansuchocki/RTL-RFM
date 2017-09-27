@@ -313,7 +313,7 @@ int main (int argc, char **argv) {
 	verbose_reset_buffer(dev);
 
 	//rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
-
+	reader_init();
 	reader_start();
 
 	//pthread_mutex_lock(&data_mutex);
