@@ -249,14 +249,24 @@ int verbose_device_search(char *s)
 
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
+
+	int n = 0;
+	int16_t countI = 0;
+	int16_t countQ = 0;
+
 	for (uint32_t j = 0; j < len; j = j + 2) {
 
 		int8_t i = ((uint8_t) buf[j]) - 128;
 		int8_t q = ((uint8_t) buf[j+1]) - 128;
 
-		if (downsampler(i, q)) {
-			int8_t di = getI();
-			int8_t dq = getQ();
+		countI += i;
+		countQ += q;
+
+		n++;
+
+		if (n == DOWNSAMPLE) {
+			int8_t avgI = countI / DOWNSAMPLE;
+			int8_t avgQ = countQ / DOWNSAMPLE;
 
 			int16_t fm = fm_demod(di, dq);
 
@@ -265,7 +275,13 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 				//fprintf(stderr, "[%i]", bit);
 				rfm_decode(bit);
 			}
+
+			n = 0;
+			countI = 0;
+			countQ = 0;
 		}
+
+		
 	}
 }
 
