@@ -23,7 +23,7 @@ void reader_init() {
    
     //memset(data,0,data_len);
 
-    data_ready = 0;
+    data_ready = 1;
 }
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
