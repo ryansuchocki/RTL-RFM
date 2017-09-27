@@ -323,6 +323,7 @@ int main (int argc, char **argv) {
 
         if (!data_ready) {
             pthread_cond_wait(&data_cond, &data_mutex);
+            pthread_mutex_unlock(&data_mutex);
             continue;
         }
 
