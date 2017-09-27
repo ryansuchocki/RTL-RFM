@@ -267,7 +267,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 			int16_t fm = fm_demod(avgI, avgQ);
 
-			/*if (squelch_state) {
+			if (squelch_state) {
 				int8_t bit = fsk_decode(fm, fm_magnitude);
 				if (bit >= 0) {
 					//fprintf(stderr, "[%i]", bit);
@@ -298,7 +298,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 						squelch_count--;
 					}
 				}
-			}*/
+			}
 
 			
 
