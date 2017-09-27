@@ -54,11 +54,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	}
 }
 
-
-
-
 void intHandler(int dummy) {
-    run = 0;
     rtlsdr_cancel_async(dev);
 }
 
@@ -110,4 +106,3 @@ int main (int argc, char **argv) {
 
 	return(0);
 }
-
