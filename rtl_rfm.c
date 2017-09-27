@@ -258,8 +258,11 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			countQ += ((uint8_t) buf[j+1]);
 		}
 
-		int8_t avgI = ((int16_t) (countI - (128 * DOWNSAMPLE))) / DOWNSAMPLE; // convert to signed, then divide
-		int8_t avgQ = ((int16_t) (countQ - (128 * DOWNSAMPLE))) / DOWNSAMPLE;
+		//int8_t avgI = ((int16_t) (countI - (128 * DOWNSAMPLE))) / DOWNSAMPLE; // convert to signed, then divide
+		//int8_t avgQ = ((int16_t) (countQ - (128 * DOWNSAMPLE))) / DOWNSAMPLE;
+
+		int8_t avgI = countI / DOWNSAMPLE - 128;
+		int8_t avgQ = countQ / DOWNSAMPLE - 128;
 
 		int32_t fm_magnitude_squared = avgI * avgI + avgQ * avgQ;
 
