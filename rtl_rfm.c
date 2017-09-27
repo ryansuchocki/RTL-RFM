@@ -247,7 +247,7 @@ int verbose_device_search(char *s)
 uint8_t squelch_state = 0; // 0 is squelched, 1 is receiving
 int squelch_count = 0;
 
-
+volatile int32_t magnitude;
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
@@ -264,7 +264,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		if (n == DOWNSAMPLE) {
 			
 
-			volatile int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
+			magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
 
 			// if (squelch_state) {
 			// 	/*int8_t avgI = countI / DOWNSAMPLE;
