@@ -272,7 +272,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					rfm_decode(bit);
 				}
 
-				if (magnitude < SQUELCH_THRESH) {
+				if (fm_magnitude < SQUELCH_THRESH) {
 					squelch_count--;
 					if(squelch_count <= 0) {
 						squelch_state = 0;
@@ -286,7 +286,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					}
 				}
 			} else {
-				if (magnitude > SQUELCH_THRESH) {
+				if (fm_magnitude > SQUELCH_THRESH) {
 					squelch_count++;
 					if (squelch_count >= SQUELCH_NUM) {
 						squelch_state = 1;
