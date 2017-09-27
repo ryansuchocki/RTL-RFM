@@ -12,7 +12,7 @@
 bool quiet = false;
 bool debugplot = false;
 int freq = 869412500;
-int gain = 50;
+int gain = 496; // 49.6
 int ppm = 43;
 int baudrate = 4800;
 
