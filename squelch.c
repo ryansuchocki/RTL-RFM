@@ -16,7 +16,7 @@ bool squelch(int32_t magnitude_squared) {
 			if(squelch_count <= 0) {
 				squelch_state = false;
 
-				fprintf(stderr, " <[ ");
+				//fprintf(stderr, " ]>\n");
 				rfm_reset();
 			}
 		} else {
@@ -30,7 +30,7 @@ bool squelch(int32_t magnitude_squared) {
 			if (squelch_count >= SQUELCH_NUM) {
 				squelch_state = true;
 
-				fprintf(stderr, " ]> ");
+				//fprintf(stderr, " <[ ");
 			}
 		} else {
 			squelch_count = 0;
