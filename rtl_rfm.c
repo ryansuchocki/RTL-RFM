@@ -292,6 +292,8 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 					squelch_count++;
 					if (squelch_count >= SQUELCH_NUM) {
 						squelch_state = 1;
+
+						fprintf(stderr, " << Carrier Found! >>\n");
 					}
 				} else {
 					if (squelch_count > 0) {
