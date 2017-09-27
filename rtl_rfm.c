@@ -86,7 +86,14 @@ int main (int argc, char **argv) {
 	if (!quiet) printf(">> STARTING RTL_RFM ...\n");
 
 	fsk_init();
-	hw_init();
+
+	int error = hw_init();
+	if (error >= 0) {
+		if (!quiet) printf(">> RTL_RFM READY\n\n");
+	} else {
+		printf(">> INIT FAILED. (%d)", error);
+		exit(-1);
+	}
 
 	rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
