@@ -10,33 +10,29 @@ static inline int16_t abs16(int16_t value) {
 
 // Linear approximation of atan2() in int16-space. Calculated in four quadrants.
 // This relies on the fact that |sin(x)| - |cos(x)| is vaguely linear from x = 0 to tau/4
-//         y
-//         |
-//     II  |  I
+//         y    
+//    \    |    /    
+//     II  |  I      
 //  -------+------- x
-//    III  |  IV
-//         |
+//    III  |  IV     
+//    /    |    \    
 #define TAU INT16_MAX * 2
-#define TURN_1_8TH TAU*1/8
-#define TURN_3_8TH TAU*3/8
-#define TURN_5_8TH TAU*-3/8
-#define TURN_7_8TH TAU*-1/8
 
 static inline int16_t atan2_int16(int16_t y, int16_t x) {
-    const int16_t absy = abs16(y);
-    const int16_t absx = abs16(x);
+    int16_t absy = abs16(y);
+    int16_t absx = abs16(x);
 
     int32_t denom = absy + absx;
     if (denom == 0) return 0; // avoid DBZ and skip rest of function
 
-    int32_t theta = ((TURN_1_8TH * ((absy - absx) << 16) / denom) >> 16); 
+    int32_t theta = (((TAU* 1/8) * ((absy - absx) << 16) / denom) >> 16); 
 
     if (y >= 0) {
-    	if (x >= 0)	return TURN_1_8TH + theta; // quadrant I 		Theta counts 'towards the y axis',
-    	else		return TURN_3_8TH - theta; // quadrant II 		Therefore, negate it in quadrants II and IV
+    	if (x >= 0)	return (TAU* 1/8) + theta; // quadrant I 		Theta counts 'towards the y axis',
+    	else		return (TAU* 3/8) - theta; // quadrant II 		Therefore, negate it in quadrants II and IV
     } else {
-    	if (x < 0)	return TURN_5_8TH + theta; // quadrant III
-    	else		return TURN_7_8TH - theta; // quadrant IV
+    	if (x < 0)	return (TAU*-3/8) + theta; // quadrant III. -3/8 = 5/8
+    	else		return (TAU*-1/8) - theta; // quadrant IV.  -1/8 = 7/8
     }
 }
 
