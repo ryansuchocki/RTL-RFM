@@ -300,7 +300,7 @@ int main (int argc, char **argv) {
 
 	int dev_index = verbose_device_search("0");
 
-	if ((rtlsdr_open(&dev, (uint32_t)dev_index)) < 0) {
+	/*if ((rtlsdr_open(&dev, (uint32_t)dev_index)) < 0) {
 		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
 		exit(1);
 	}
@@ -310,13 +310,13 @@ int main (int argc, char **argv) {
 	verbose_set_sample_rate(dev, BIGSAMPLERATE);
 	verbose_gain_set(dev, nearest_gain(dev, 500));
 	verbose_ppm_set(dev, ppm);
-	verbose_reset_buffer(dev);
+	verbose_reset_buffer(dev);*/
 
 	//rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
 
 	reader_init();
 
-	reader_start();
+	//reader_start();
 
 	//pthread_mutex_lock(&data_mutex);
 
@@ -339,7 +339,7 @@ int main (int argc, char **argv) {
         memcpy(mydata, data, data_len);
 
         data_ready = 0;
-        pthread_cond_signal(&data_cond);
+        //pthread_cond_signal(&data_cond);
         pthread_mutex_unlock(&data_mutex);
         
         for (int i = 0; i < mydatalen; i++) {

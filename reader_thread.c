@@ -28,11 +28,11 @@ void reader_init() {
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
-    fprintf(stderr, "@");
+    //fprintf(stderr, "@");
 
     pthread_mutex_lock(&data_mutex);
-    while (data_ready == 1)
-        pthread_cond_wait(&data_cond, &data_mutex);
+    //while (data_ready == 1)
+    //    pthread_cond_wait(&data_cond, &data_mutex);
     //pthread_mutex_unlock(&data_mutex);
 
     fprintf(stderr, "#");
@@ -65,10 +65,12 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 
     data_ready = 1;
+    fprintf(stderr, "1");
     pthread_cond_signal(&data_cond);
+    fprintf(stderr, "2");
     pthread_mutex_unlock(&data_mutex);
 
-    fprintf(stderr, ",");
+    fprintf(stderr, "3");
 }
 
 void *reader_entry(void *arg) {
