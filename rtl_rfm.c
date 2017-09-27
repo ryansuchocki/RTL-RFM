@@ -255,7 +255,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	int16_t countI = 0;
 	int16_t countQ = 0;
 
-	/*for (uint32_t j = 0; j < len; j = j + 2) {
+	for (uint32_t j = 0; j < len; j = j + 2) {
 
 		countI += (int8_t) (((uint8_t) buf[j]) - 128);
 		countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
@@ -265,7 +265,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			int8_t avgI = countI / DOWNSAMPLE;
 			int8_t avgQ = countQ / DOWNSAMPLE;
 
-			int16_t fm = fm_demod(avgI, avgQ);
+			/*int16_t fm = fm_demod(avgI, avgQ);
 
 			if (squelch_state) {
 				int8_t bit = fsk_decode(fm, fm_magnitude);
@@ -298,7 +298,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 						squelch_count--;
 					}
 				}
-			}
+			}*/
 
 			
 
@@ -308,7 +308,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		}
 
 		
-	}*/
+	}
 }
 
 
