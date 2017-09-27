@@ -252,7 +252,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	//int16_t countI = 0;
 	//int16_t countQ = 0;
 
-	for (int k = 0; k < (len / (DOWNSAMPLE*2)); k++) {
+	for (uint32_t k = 0; k < (len / (DOWNSAMPLE*2)); k++) {
 		uint16_t countI = 0;
 		uint16_t countQ = 0;
 
