@@ -256,22 +256,13 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		uint16_t countI = 0;
 		uint16_t countQ = 0;
 
-		const uint32_t ks = (k * DOWNSAMPLE * 2);
-		const uint32_t ke = ((k+1) * DOWNSAMPLE * 2);
-
-		for (uint32_t j = ks; j < ke; j+= 2) {
-			// countI += (int8_t) (((uint8_t) buf[j]) - 128);
-			// countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
-
+		for (uint32_t j = (k * DOWNSAMPLE * 2); j < ((k+1) * DOWNSAMPLE * 2); j+= 2) {
 			countI +=  ((uint8_t) buf[j]);
 			countQ += ((uint8_t) buf[j+1]);
 		}
 
-		int16_t signedCountI = (int16_t) (countI - (128 * DOWNSAMPLE));
-		int16_t signedCountQ = (int16_t) (countQ - (128 * DOWNSAMPLE));
-
-		int8_t avgI = signedCountI / DOWNSAMPLE;
-		int8_t avgQ = signedCountQ / DOWNSAMPLE;
+		int8_t avgI = ((int16_t) (countI - (128 * DOWNSAMPLE))) / DOWNSAMPLE; // convert to signed, then divide
+		int8_t avgQ = ((int16_t) (countQ - (128 * DOWNSAMPLE))) / DOWNSAMPLE;
 
 		int32_t fm_magnitude = sqrt(avgI * avgI + avgQ * avgQ);
 
