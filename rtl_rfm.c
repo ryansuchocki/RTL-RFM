@@ -316,7 +316,7 @@ int main (int argc, char **argv) {
 
 	reader_start();
 
-	pthread_mutex_lock(&data_mutex);
+	//pthread_mutex_lock(&data_mutex);
 
     while(run) {
     	pthread_mutex_lock(&data_mutex);
