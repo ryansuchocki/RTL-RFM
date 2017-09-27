@@ -76,22 +76,20 @@ int main (int argc, char **argv) {
 			"  -g    Gain [50]\n"
 			"  -p    PPM error [47]\n";
 
-	while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1)
-	switch (c)	{
-		case 'h':	fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
-		case 'q':	quiet = true;										break;
-		case 'd':	debugplot = true;									break;
-		case 'f':	freq = atoi(optarg);								break;
-		case 'g':	gain = atoi(optarg);								break;
-		case 'p':	ppm = atoi(optarg);									break;
-		case '?':
-		default:
-			exit(EXIT_FAILURE);
+	while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1) {
+		switch (c)	{
+			case 'h':	fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
+			case 'q':	quiet = true;										break;
+			case 'd':	debugplot = true;									break;
+			case 'f':	freq = atoi(optarg);								break;
+			case 'g':	gain = atoi(optarg);								break;
+			case 'p':	ppm = atoi(optarg);									break;
+			case '?':
+			default: fprintf(stderr, ">> Unknown Argument: %c\n", c); exit(EXIT_FAILURE);
+		}
 	}
 
 	signal(SIGINT, intHandler);
-
-
 
 	if (!quiet) printf(">> STARTING RTL_RFM ...\n");
 
@@ -101,8 +99,8 @@ int main (int argc, char **argv) {
 	if (error >= 0) {
 		if (!quiet) printf(">> RTL_RFM READY\n\n");
 	} else {
-		printf(">> INIT FAILED. (%d)", error);
-		exit(-1);
+		fprintf(stderr, ">> INIT FAILED. (%d)", error);
+		exit(EXIT_FAILURE);
 	}
 
 	rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
