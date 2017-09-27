@@ -267,14 +267,14 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			int32_t magnitude = /*sqrt*/(countI * countI + countQ * countQ); // good enough approximation?
 
 			if (squelch_state) {
-				int8_t avgI = countI / DOWNSAMPLE;
+				/*int8_t avgI = countI / DOWNSAMPLE;
 				int8_t avgQ = countQ / DOWNSAMPLE;
 				int16_t fm = fm_demod(avgI, avgQ);
 				int8_t bit = fsk_decode(fm, fm_magnitude);
 				if (bit >= 0) {
 					//fprintf(stderr, "[%i]", bit);
 					rfm_decode(bit);
-				}
+				}*/
 
 				if (magnitude < (SQUELCH_THRESH * DOWNSAMPLE * DOWNSAMPLE * 2)) {
 					squelch_count--;
