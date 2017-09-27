@@ -54,8 +54,6 @@ static inline int16_t atan2_int16(int16_t y, int16_t x) {
 int8_t pi = 0;
 int8_t pq = 0;
 
-int16_t fm_magnitude = 0;
-
 int16_t fm_demod(int8_t i, int8_t q) {
 	
 	// Complex-multiply <i,q> with the conjugate of <pi,pq>
@@ -63,8 +61,6 @@ int16_t fm_demod(int8_t i, int8_t q) {
 	int32_t ppi = q * pi - i * pq;
 
 	int16_t xlp = atan2_int16(ppi, ppr);
-	
-	//fm_magnitude = /*sqrt*/(i * i + q * q);
 
 	pi = i;
 	pq = q;
