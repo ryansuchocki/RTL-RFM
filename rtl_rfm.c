@@ -241,10 +241,11 @@ int verbose_device_search(char *s)
 
 
 
+#define SQUELCH_THRESH 10
+#define SQUELCH_NUM 16
 
-
-
-
+uint8_t squelch_state = 0; // 0 is squelched, 1 is receiving
+int squelch_count = 0;
 
 
 
@@ -266,11 +267,37 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 			int16_t fm = fm_demod(avgI, avgQ);
 
-			int8_t bit = fsk_decode(fm, fm_magnitude);
-			if (bit >= 0) {
-				//fprintf(stderr, "[%i]", bit);
-				rfm_decode(bit);
+			if (squelch_state) {
+				int8_t bit = fsk_decode(fm, fm_magnitude);
+				if (bit >= 0) {
+					//fprintf(stderr, "[%i]", bit);
+					rfm_decode(bit);
+				}
+
+				if (fm_magnitude < SQUELCH_THRESH) {
+					squelch_count--;
+					if(squelch_count <= 0) {
+						squelch_state = 0;
+					}
+				} else {
+					if (squelch_count < SQUELCH_NUM) {
+						squelch_count++;
+					}
+				}
+			} else {
+				if (fm_magnitude > SQUELCH_THRESH) {
+					squelch_count++;
+					if (squelch_count >= SQUELCH_NUM) {
+						squelch_state = 1;
+					}
+				} else {
+					if (squelch_count > 0) {
+						squelch_count--;
+					}
+				}
 			}
+
+			
 
 			n = 0;
 			countI = 0;
