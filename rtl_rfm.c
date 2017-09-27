@@ -3,7 +3,6 @@
 
 #include "rtl_rfm.h"
 
-#include "hardware.h"
 #include "squelch.h"
 #include "fm.h"
 #include "fsk.h"
@@ -16,8 +15,19 @@ int gain = 496; // 49.6
 int ppm = 43;
 int baudrate = 4800;
 
+rtlsdr_dev_t *dev = NULL;
 
+int hw_init() {
+	if (rtlsdr_open(&dev, 0) < 0) return -1;
+	if (rtlsdr_set_center_freq(dev, freq) < 0) return -2; // Set freq before sample rate to avoid "PLL NOT LOCKED"
+	if (rtlsdr_set_sample_rate(dev, BIGSAMPLERATE) < 0) return -3;
+	if (rtlsdr_set_tuner_gain_mode(dev, 1) < 0) return -4;
+	if (rtlsdr_set_tuner_gain(dev, gain) < 0) return -5;
+	if (rtlsdr_set_freq_correction(dev, ppm) < 0) return -6;
+	if (rtlsdr_reset_buffer(dev) < 0) return -7;
 
+	return 0;
+}
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
