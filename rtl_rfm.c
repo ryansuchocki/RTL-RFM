@@ -320,12 +320,12 @@ int main (int argc, char **argv) {
 
     while(run) {
     	pthread_mutex_lock(&data_mutex);
-
-        if (!data_ready) {
+        while (!data_ready) {
             pthread_cond_wait(&data_cond, &data_mutex);
-            pthread_mutex_unlock(&data_mutex);
-            continue;
         }
+        //pthread_mutex_unlock(&data_mutex);
+
+        //pthread_mutex_lock(&data_mutex);
 
         fprintf(stderr, ".");
 
