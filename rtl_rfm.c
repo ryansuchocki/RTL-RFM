@@ -1,19 +1,6 @@
 // rtl_rfm: FSK1200 Decoder
 // R. Suchocki
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <string.h>
-#include <math.h>
-#include <time.h>
-#include <signal.h>
-#include <errno.h>
-extern int errno;
-
 #include "rtl_rfm.h"
 #include "hardware.h"
 #include "squelch.h"

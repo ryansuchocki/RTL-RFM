@@ -1,13 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <string.h>
-#include <math.h>
-#include <time.h>
-
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
 #include "fsk.h" // for bool hold
