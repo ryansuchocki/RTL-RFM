@@ -256,7 +256,10 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		uint16_t countI = 0;
 		uint16_t countQ = 0;
 
-		for (uint32_t j = (k * DOWNSAMPLE * 2); j < ((k+1) * DOWNSAMPLE * 2); j+= 2) {
+		const uint32_t ks = (k * DOWNSAMPLE * 2);
+		const uint32_t ke = ((k+1) * DOWNSAMPLE * 2);
+
+		for (uint32_t j = ks; j < ke; j+= 2) {
 			// countI += (int8_t) (((uint8_t) buf[j]) - 128);
 			// countQ += (int8_t) (((uint8_t) buf[j+1]) - 128);
 
