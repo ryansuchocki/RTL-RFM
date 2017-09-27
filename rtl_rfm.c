@@ -241,7 +241,7 @@ int verbose_device_search(char *s)
 
 
 
-#define SQUELCH_THRESH 4
+#define SQUELCH_THRESH 10
 #define SQUELCH_NUM 16
 
 uint8_t squelch_state = 0; // 0 is squelched, 1 is receiving
