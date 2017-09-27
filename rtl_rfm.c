@@ -54,7 +54,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	}
 }
 
-void intHandler(int dummy) {
+void intHandler(int signal) {
     rtlsdr_cancel_async(dev);
 }
 
