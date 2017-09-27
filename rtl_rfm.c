@@ -241,6 +241,7 @@ int verbose_device_search(char *s)
 
 
 #define SQUELCH_THRESH 10
+#define SQUELCH_THRESH_SQUARED (SQUELCH_THRESH * SQUELCH_THRESH)
 #define SQUELCH_NUM 16
 
 uint8_t squelch_state = 0; // 0 is squelched, 1 is receiving
@@ -260,19 +261,19 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 		int8_t avgI = ((int16_t) (countI - (128 * DOWNSAMPLE))) / DOWNSAMPLE; // convert to signed, then divide
 		int8_t avgQ = ((int16_t) (countQ - (128 * DOWNSAMPLE))) / DOWNSAMPLE;
 
-		int32_t fm_magnitude = sqrt(avgI * avgI + avgQ * avgQ);
+		int32_t fm_magnitude_squared = avgI * avgI + avgQ * avgQ;
 
 		if (squelch_state) {
 
 			// Process Sample
 				int16_t fm = fm_demod(avgI, avgQ);
-				int8_t bit = fsk_decode(fm, fm_magnitude);
+				int8_t bit = fsk_decode(fm, sqrt(fm_magnitude_squared));
 				if (bit >= 0) {
 					rfm_decode(bit);
 				}
 			// End of Sample Processing
 
-			if (fm_magnitude < SQUELCH_THRESH) {
+			if (fm_magnitude < SQUELCH_THRESH_SQUARED) {
 				squelch_count--;
 				if(squelch_count <= 0) {
 					squelch_state = 0;
@@ -288,7 +289,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 				squelch_count = SQUELCH_NUM;
 			}
 		} else {
-			if (fm_magnitude > SQUELCH_THRESH) {
+			if (fm_magnitude > SQUELCH_THRESH_SQUARED) {
 				squelch_count++;
 				if (squelch_count >= SQUELCH_NUM) {
 					squelch_state = 1;
