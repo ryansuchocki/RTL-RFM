@@ -10,7 +10,7 @@ void fsk_init(int freq, int samplerate, int baudrate, bool quiet) {
 	float fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16?
 	int filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 
-	float fc2 = baudrate * 1.5; /// 1.5;
+	float fc2 = baudrate * 0.5; /// 1.5;
 	int filter2size = ((float) (0.443 * (float) samplerate)) / fc2;
 	filter2size = (filter2size < 1) ? 1 : filter2size;
 
