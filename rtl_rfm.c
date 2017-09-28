@@ -10,7 +10,7 @@
 
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 32
+#define DOWNSAMPLE 64
 
 bool quiet = false;
 bool debugplot = false;
