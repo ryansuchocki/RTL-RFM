@@ -32,7 +32,7 @@ void fsk_cleanup() {
 
 void print_waveform(int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared) {
 	#define SCOPEWIDTH 128
-	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * thissample / (INT16_MAX));
+	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * thissample) / (INT16_MAX);
 	x = (x < 0) ? 0 : x;
 	x = (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
 	//printf("%08d", sample);
