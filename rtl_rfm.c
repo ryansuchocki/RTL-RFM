@@ -53,7 +53,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			int16_t fm = fm_demod(avgI, avgQ);
 			int8_t bit = fsk_decode(fm, fm_magnitude_squared, debugplot);
 			if (bit >= 0) {
-				rfm_decode(bit, samplerate, debugplot, quiet);
+				rfm_decode(bit, samplerate, quiet);
 			}
 		}
 	}

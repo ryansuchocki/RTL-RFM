@@ -83,8 +83,7 @@ void process_byte(uint8_t thebyte, bool quiet) {
 uint8_t thisbyte = 0;
 uint32_t amble = 0;
 
-void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
-	if (debugplot) printf("C\n"); 
+void rfm_decode(uint8_t thebit, int samplerate, bool quiet) {
 
 	if (bitphase < 0) {
 		amble = (amble << 1) | (thebit & 0b1);
