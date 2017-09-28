@@ -70,8 +70,6 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 	int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
 	uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
 
-	if (debugplot) print_waveform(thissample, prevsample, thebit, clk, magnitude_squared);
-	
 	// Zero-Crossing Detector for phase correction:
 	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
 		if (clk > 0 && clk <= (windowsize/2)) {
@@ -80,6 +78,8 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 			clk = (clk + 1) % windowsize;			// advance clock 
 		} // else clock locked on! Nothing to do...
 	}
+
+	if (debugplot) print_waveform(thissample, prevsample, thebit, clk, magnitude_squared);
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 
