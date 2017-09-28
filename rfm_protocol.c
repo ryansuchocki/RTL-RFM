@@ -41,7 +41,7 @@ void print_sanitize(uint8_t buf[], uint8_t bufi) {
 	}
 }
 
-void process_byte(uint8_t thebyte) {	
+void process_byte(uint8_t thebyte, bool quiet) {	
 	if (bytesexpected < 0) { //expecting length byte!
 		bytesexpected = thebyte + 2; // +2 for crc
 		//printf("BE: %d", bytesexpected);
@@ -81,7 +81,7 @@ void process_byte(uint8_t thebyte) {
 uint8_t thisbyte = 0;
 uint32_t amble = 0;
 
-void rfm_decode(uint8_t thebit, int samplerate) {
+void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 	if (debugplot) putchar('C'); 
 
 	if (bitphase >= 0) {
@@ -91,7 +91,7 @@ void rfm_decode(uint8_t thebit, int samplerate) {
 
 		if (bitphase > 7) {
 			bitphase = 0;
-			process_byte(thisbyte);			
+			process_byte(thisbyte, quiet);			
 		}
 	}
 

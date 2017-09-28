@@ -49,11 +49,11 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 
 		int32_t fm_magnitude_squared = avgI * avgI + avgQ * avgQ;
 
-		if (squelch(fm_magnitude_squared)) {
+		if (squelch(fm_magnitude_squared, debugplot)) {
 			int16_t fm = fm_demod(avgI, avgQ);
-			int8_t bit = fsk_decode(fm, sqrt(fm_magnitude_squared));
+			int8_t bit = fsk_decode(fm, fm_magnitude_squared, debugplot);
 			if (bit >= 0) {
-				rfm_decode(bit, samplerate);
+				rfm_decode(bit, samplerate, debugplot, quiet);
 			}
 		}
 	}
@@ -93,7 +93,7 @@ int main (int argc, char **argv) {
 
 	if (!quiet) printf(">> STARTING RTL_RFM ...\n");
 
-	fsk_init(freq, samplerate, baudrate);
+	fsk_init(freq, samplerate, baudrate, quiet);
 
 	int error = hw_init();
 	if (error >= 0) {

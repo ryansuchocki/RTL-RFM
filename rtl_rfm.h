@@ -14,7 +14,4 @@
 #include <signal.h>
 #include <rtl-sdr.h>
 
-bool quiet;
-bool debugplot;
-
 #endif

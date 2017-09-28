@@ -9,7 +9,7 @@
 bool squelch_state = false; // 0 is squelched, 1 is receiving
 int squelch_count = 0;
 
-bool squelch(int32_t magnitude_squared) {
+bool squelch(int32_t magnitude_squared, bool debugplot) {
 	if (squelch_state) {
 		if (magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
 			squelch_count--;
