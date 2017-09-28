@@ -31,7 +31,7 @@ void fsk_cleanup() {
 
 
 void print_waveform(int16_t sample, int16_t magnitude) {
-	#define SCOPEWIDTH 100
+	#define SCOPEWIDTH 128
 	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * sample / (INT16_MAX));
 	x = (x < 0) ? 0 : x;
 	x = (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
