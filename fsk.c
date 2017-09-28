@@ -10,10 +10,7 @@ float fc2;
 int filtersize; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 int filter2size;
 
-Mavg filter;
-
-int16_t *filter2;
-int16_t *mavgbuffer;
+Mavg filter, filter2, filter3;
 
 int32_t mavg;
 
@@ -34,74 +31,44 @@ void fsk_init() {
 	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
 	mavg_init(&filter, filtersize);
-	filter2 = malloc(sizeof(int16_t) * filter2size);
-	mavgbuffer = malloc(sizeof(int16_t) * windowsize);
-
-	for (int i = 0; i < filter2size; i++) filter2[i] = 0;
-	for (int i = 0; i < windowsize; i++) mavgbuffer[i] = 0;
+	mavg_init(&filter2, filter2size);
+	mavg_init(&filter3, windowsize);
 }
 
 void fsk_cleanup() {
 	mavg_cleanup(&filter);
-	free(filter2);
-	free(mavgbuffer);
+	mavg_cleanup(&filter2);
+	mavg_cleanup(&filter3);
 }
 
 // START OF HIGHPASS FILTER
 
-int fi = 0;
-int32_t count = 0;
-
-int16_t latestoffset = 0;
 int16_t offsethold = 0;
 bool hold = false;
 
 int16_t hipass(int16_t sample) {
+	if (!hold) offsethold = process(&filter, sample) / filtersize;
 
-	int32_t count = process(&filter, sample);
-
-	latestoffset = count / filtersize;
-
-	if (hold) return sample - offsethold;
-	return sample - latestoffset;
+	return sample - offsethold;
 }
 
 // END OF HIGHPASS FILTER
 
 // START OF LOWPASS FILTER
 
-int f2i = 0;
-int32_t count2 = 0;
-
 int16_t lopass(int16_t sample) {
 
-	if (filter2size < 2) return sample;
-
-	f2i = (f2i + 1) % filter2size;
-
-	count2 -= filter2[f2i];
-	filter2[f2i] = sample;
-	count2 += filter2[f2i];
-
-	return (count2 / filter2size);
+	return process(&filter2, sample) / filter2size;
 }
 
 // END OF LOWPASS FILTER
 
 // START OF MOVING AVERAGE
 
-short bi = 0;
-int32_t mavgcount = 0;
-
 int32_t moving_average(int16_t sample) {
 
-	bi = (bi + 1) % windowsize;
+	return process(&filter3, sample);
 
-	mavgcount -= mavgbuffer[bi];
-	mavgbuffer[bi] = sample;
-	mavgcount += mavgbuffer[bi];
-
-	return mavgcount /*/ windowsize*/;
 }
 
 // END OF MOVING AVERAGE
