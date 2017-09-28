@@ -20,7 +20,7 @@ void fsk_init() {
 	fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16?
 	filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 
-	fc2 = baudrate * 2; /// 1.5;
+	fc2 = baudrate * 1.0; /// 1.5;
 	filter2size = ((float) (0.443 * (float) samplerate)) / fc2;
 	filter2size = (filter2size < 1) ? 1 : filter2size;
 
