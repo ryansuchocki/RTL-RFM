@@ -41,8 +41,8 @@ void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, 
 	//printf("%08d", sample);
 
 	for (int i = 0; i < SCOPEWIDTH; i++) {
-		if (i == x) putchar('.');
-		else if (i == y) putchar('X');
+		if (i == y) putchar('X');
+		else if (i == x) putchar('-');
 		else if (i == (SCOPEWIDTH/2)) putchar('|');
 		else putchar(' ');
 	}
