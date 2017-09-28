@@ -30,15 +30,26 @@ void fsk_cleanup() {
 }
 
 
-void print_waveform(int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared) {
+void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared) {
 	#define SCOPEWIDTH 128
-	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * thissample) / (INT16_MAX);
+	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * unfiltered) / (INT16_MAX);
 	x = (x < 0) ? 0 : x;
 	x = (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
+	int y = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * thissample) / (INT16_MAX);
+	y = (y < 0) ? 0 : y;
+	y = (y > SCOPEWIDTH) ? SCOPEWIDTH : y;
 	//printf("%08d", sample);
-	for (int i = 0; i < x; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
-	putchar('x');
-	for (int i = x+1; i < SCOPEWIDTH; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
+
+	for (int i = 0; i < SCOPEWIDTH; i++) {
+		if (i == x) putchar('.');
+		else if (i == y) putchar('X');
+		else if (i == (SCOPEWIDTH/2)) putchar('|');
+		else putchar(' ');
+	}
+
+	// for (int i = 0; i < x; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
+	// putchar('x');
+	// for (int i = x+1; i < SCOPEWIDTH; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
 
 	printf("%.2f", sqrt(magnitude_squared));
 	//putchar('\t');
@@ -79,7 +90,7 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 		} // else clock locked on! Nothing to do...
 	}
 
-	if (debugplot) print_waveform(thissample, prevsample, thebit, clk, magnitude_squared);
+	if (debugplot) print_waveform(sample, thissample, prevsample, thebit, clk, magnitude_squared);
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 
