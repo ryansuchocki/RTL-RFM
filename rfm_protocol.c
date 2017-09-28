@@ -90,6 +90,7 @@ void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 		amble = (amble << 1) | (thebit & 0b1);
 
 		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
+			filter.counthold = filter.count;
 			filter.hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");

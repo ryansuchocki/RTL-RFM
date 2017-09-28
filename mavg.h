@@ -6,7 +6,7 @@
 		int16_t *data;
 		uint16_t index;
 		int32_t count;
-		int16_t counthold;
+		int32_t counthold;
 		bool hold;
 	} Mavg;
 
