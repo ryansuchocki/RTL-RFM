@@ -66,7 +66,7 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 
 	clk = (clk + 1) % windowsize;
 
-	int16_t thissample = /*mavg_lopass(&filter2, */mavg_hipass(&filter, sample)/*)*/;
+	int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
 	uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
 
 	if (debugplot) print_waveform(thissample, prevsample, thebit, clk, magnitude_squared);
