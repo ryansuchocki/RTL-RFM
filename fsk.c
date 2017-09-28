@@ -70,13 +70,15 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 		}		
 	}
 
-	if (debugplot) if (clk == 0) printf("\t%d", ((mavg_count(&filter3, thissample) > 0) ? 1 : 0));	
+	uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
+
+	if (debugplot) if (clk == 0) printf("\t%d", thebit);	
 
 	if (debugplot) putchar('\n');
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 
-	if (clk == 0) return((mavg_count(&filter3, thissample) > 0) ? 1 : 0);	
+	if (clk == 0) return thebit;	
 	else return -1;
 	
 }
