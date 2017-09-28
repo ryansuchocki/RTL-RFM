@@ -103,7 +103,7 @@ void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 		}
 	} else {
 		thisbyte = (thisbyte << 1) | (thebit & 0b1);
-		bitphase++
+		bitphase++;
 
 		if (bitphase > 7) {
 			bitphase = 0;
