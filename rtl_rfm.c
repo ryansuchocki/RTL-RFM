@@ -8,12 +8,17 @@
 #include "fsk.h"
 #include "rfm_protocol.h"
 
+
+#define BIGSAMPLERATE 2457600
+#define DOWNSAMPLE 64
+
 bool quiet = false;
 bool debugplot = false;
 int freq = 869412500;
 int gain = 496; // 49.6
 int ppm = 43;
 int baudrate = 4800;
+int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // multiple of baudrate
 
 rtlsdr_dev_t *dev = NULL;
 
@@ -48,7 +53,7 @@ void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 			int16_t fm = fm_demod(avgI, avgQ);
 			int8_t bit = fsk_decode(fm, sqrt(fm_magnitude_squared));
 			if (bit >= 0) {
-				rfm_decode(bit);
+				rfm_decode(bit, samplerate);
 			}
 		}
 	}
@@ -66,8 +71,8 @@ int main (int argc, char **argv) {
 		"  -q    Quiet. Only output good messages\n"
 		"  -d    Show Debug Plot\n"
 		"  -f    Frequency [869412500]\n"
-		"  -g    Gain [50]\n"
-		"  -p    PPM error [47]\n";
+		"  -g    Gain [49.6]\n"
+		"  -p    PPM error [43]\n";
 
 	int c;
 
@@ -77,7 +82,7 @@ int main (int argc, char **argv) {
 			case 'q':	quiet = true;										break;
 			case 'd':	debugplot = true;									break;
 			case 'f':	freq = atoi(optarg);								break;
-			case 'g':	gain = atoi(optarg);								break;
+			case 'g':	gain = atof(optarg) * 10;							break;
 			case 'p':	ppm = atoi(optarg);									break;
 			case '?':
 			default: exit(EXIT_FAILURE);
@@ -88,7 +93,7 @@ int main (int argc, char **argv) {
 
 	if (!quiet) printf(">> STARTING RTL_RFM ...\n");
 
-	fsk_init();
+	fsk_init(freq, samplerate, baudrate);
 
 	int error = hw_init();
 	if (error >= 0) {

@@ -81,7 +81,7 @@ void process_byte(uint8_t thebyte) {
 uint8_t thisbyte = 0;
 uint32_t amble = 0;
 
-void rfm_decode(uint8_t thebit) {
+void rfm_decode(uint8_t thebit, int samplerate) {
 	if (debugplot) putchar('C'); 
 
 	if (bitphase >= 0) {

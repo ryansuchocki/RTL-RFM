@@ -14,15 +14,7 @@
 #include <signal.h>
 #include <rtl-sdr.h>
 
-#define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 64
-
 bool quiet;
 bool debugplot;
-int freq;
-int gain;
-int ppm;
-int baudrate;
-int samplerate;
 
 #endif
