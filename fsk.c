@@ -1,6 +1,8 @@
 #include "rtl_rfm.h"
 #include "fsk.h"
 
+#include "mavg.h"
+
 int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // multiple of baudrate
 int windowsize;
 float fc; // Fc = mavg filter cutoff frequency. Aim for baud/10
@@ -8,7 +10,8 @@ float fc2;
 int filtersize; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 int filter2size;
 
-int16_t *filter;
+Mavg filter;
+
 int16_t *filter2;
 int16_t *mavgbuffer;
 
@@ -30,17 +33,16 @@ void fsk_init() {
 
 	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
-	filter = malloc(sizeof(int16_t) * filtersize);
+	mavg_init(&filter, filtersize);
 	filter2 = malloc(sizeof(int16_t) * filter2size);
 	mavgbuffer = malloc(sizeof(int16_t) * windowsize);
 
-	for (int i = 0; i < filtersize; i++) filter[i] = 0;
 	for (int i = 0; i < filter2size; i++) filter2[i] = 0;
 	for (int i = 0; i < windowsize; i++) mavgbuffer[i] = 0;
 }
 
 void fsk_cleanup() {
-	free(filter);
+	mavg_cleanup(&filter);
 	free(filter2);
 	free(mavgbuffer);
 }
@@ -56,11 +58,7 @@ bool hold = false;
 
 int16_t hipass(int16_t sample) {
 
-	fi = (fi + 1) % filtersize;
-
-	count -= filter[fi];
-	filter[fi] = sample;
-	count += filter[fi];
+	int32_t count = process(&filter, sample);
 
 	latestoffset = count / filtersize;
 
