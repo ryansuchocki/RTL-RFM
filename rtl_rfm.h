@@ -23,9 +23,6 @@ int freq;
 int gain;
 int ppm;
 int baudrate;
-bool hold;
 int samplerate;
-int16_t latestoffset;
-int16_t offsethold;
 
 #endif

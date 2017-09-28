@@ -14,7 +14,7 @@ bool mavg_init(Mavg *filter, uint16_t newsize);
 bool mavg_cleanup(Mavg *filter);
 int32_t process(Mavg *filter, int16_t sample);
 
-int16_t mavg_hipass(Mavg *filter, int16_t sample, bool hold);
+int16_t mavg_hipass(Mavg *filter, int16_t sample);
 int16_t mavg_lopass(Mavg *filter, int16_t sample);
 int32_t mavg_count(Mavg *filter, int16_t sample);
 

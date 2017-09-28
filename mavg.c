@@ -29,8 +29,8 @@ int32_t process(Mavg *filter, int16_t sample) {
 	return filter->count;
 }
 
-int16_t mavg_hipass(Mavg *filter, int16_t sample, bool hold) {
-	if (!hold) filter->counthold = process(filter, sample);
+int16_t mavg_hipass(Mavg *filter, int16_t sample) {
+	if (!filter->hold) filter->counthold = process(filter, sample);
 	return sample - (filter->counthold / filter->size);
 }
 

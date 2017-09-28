@@ -10,8 +10,6 @@ float fc2;
 int filtersize; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 int filter2size;
 
-Mavg filter, filter2, filter3;
-
 int32_t mavg;
 
 void fsk_init() {
@@ -70,7 +68,7 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 	clk = (clk + 1) % CLKPERIOD;
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
-	thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample, hold));
+	thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
 
 	mavg = mavg_count(&filter3, thissample);
 

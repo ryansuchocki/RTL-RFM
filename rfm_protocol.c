@@ -1,6 +1,8 @@
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
 
+#include "fsk.h" // for filters
+
 int bytesexpected = 0;
 int bitphase = -1;
 
@@ -72,7 +74,7 @@ void process_byte(uint8_t thebyte) {
 		//printf("'%.*s'", packet_bi, packet_buffer);
 		bitphase = -1; // search for new preamble
 
-		hold = false; // reset offset hold.
+		filter.hold = false; // reset offset hold.
 	}
 }
 
@@ -99,11 +101,11 @@ void rfm_decode(uint8_t thebit) {
 		// "2D4C" = 0010'1101'0100'1100
 
 		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes
-			hold = true;
+			filter.hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
-			float theoffset = latestoffset * (samplerate / 32768.0) / 1000;
-			if (!quiet) printf(" (OFFSET %.2fkHz) ", theoffset);
+			float foffset = (filter.counthold/filter.size) * (samplerate / 32768.0) / 1000;
+			if (!quiet) printf(" (OFFSET %.2fkHz) ", foffset);
 
 			packet_bi = 0;
 			bitphase = 0;
@@ -117,7 +119,7 @@ void rfm_decode(uint8_t thebit) {
 
 void rfm_reset() {
 	bitphase = -1; // search for new preamble
-	hold = false; // reset offset hold.
+	filter.hold = false; // reset offset hold.
 	thisbyte = 0;
 	amble = 0;
 }
