@@ -56,6 +56,8 @@ void print_waveform(int16_t thissample, int16_t prevsample, uint8_t thebit, int 
 	}
 
 	if (clk == 0) printf("\t%d", thebit); 
+
+	printf("\n");
 }
 
 int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
