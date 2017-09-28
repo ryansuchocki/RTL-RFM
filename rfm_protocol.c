@@ -99,7 +99,6 @@ void rfm_decode(uint8_t thebit) {
 		// "2D4C" = 0010'1101'0100'1100
 
 		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes
-			offsethold = latestoffset;
 			hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");

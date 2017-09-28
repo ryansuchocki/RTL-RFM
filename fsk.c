@@ -98,6 +98,4 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 	if (clk == 0) return(thebit);	
 	else return -1;
 	
-
-
 }
