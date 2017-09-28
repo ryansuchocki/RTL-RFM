@@ -30,7 +30,7 @@ void fsk_cleanup() {
 }
 
 
-void print_waveform(int16_t sample, int16_t magnitude) {
+void print_waveform(int16_t sample, int16_t prevsample, uint8_t thebit, int clk, int16_t magnitude) {
 	#define SCOPEWIDTH 128
 	int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * sample / (INT16_MAX));
 	x = (x < 0) ? 0 : x;
@@ -42,18 +42,7 @@ void print_waveform(int16_t sample, int16_t magnitude) {
 
 	printf("%04i", magnitude);
 	//putchar('\t');
-}
 
-int clk = 1;
-int16_t prevsample = 0;
-
-int8_t fsk_decode(int16_t sample, int16_t magnitude) {
-
-	clk = (clk + 1) % windowsize;
-
-	int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
-
-	if (debugplot) print_waveform(thissample, magnitude);
 	
 	// Zero-Crossing Detector for phase correction:
 	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
@@ -70,15 +59,32 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 		}		
 	}
 
+
+	if (debugplot) { if (clk == 0) printf("\t%d", thebit); putchar('\n'); }
+}
+
+int8_t fsk_decode(int16_t sample, int16_t magnitude) {
+
+	static int clk = 1;
+	static int16_t prevsample = 0;
+
+	clk = (clk + 1) % windowsize;
+
+	int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
 	uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
 
-	if (debugplot) if (clk == 0) printf("\t%d", thebit);	
-
-	if (debugplot) putchar('\n');
+	if (debugplot) print_waveform(thissample, prevsample, thebit, clk, magnitude);
+	
+	// Zero-Crossing Detector for phase correction:
+	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
+		if (clk > 0 && clk <= (windowsize/2)) {
+			clk -= (windowsize+1); // delay clock	
+		} else if (clk > (windowsize/2) && clk < (windowsize)) {
+			clk = (clk + 1) % windowsize;			// advance clock 
+		} // else clock locked on! Nothing to do...
+	}
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 
-	if (clk == 0) return thebit;	
-	else return -1;
-	
+	if (clk) return -1; else return thebit; // Return the bit when clock == 0!
 }
