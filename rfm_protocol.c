@@ -93,7 +93,7 @@ void rfm_decode(uint8_t thebit, int samplerate, bool quiet) {
 			filter.hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
-			float foffset = (filter.counthold/filter.size) * (samplerate / 32768.0) / 2000;
+			float foffset = (filter.counthold/filter.size) * (samplerate / 32768.0) / 1000;
 			if (!quiet) printf("(OFFSET %.2fkHz) ", foffset);
 
 			packet_bi = 0;		// reset the packet buffer
