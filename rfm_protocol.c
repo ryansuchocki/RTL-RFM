@@ -54,7 +54,6 @@ void process_byte(uint8_t thebyte, bool quiet) {
 			thecrc <<= 8;
 			thecrc |= thebyte;
 		}
-		
 
 		bytesexpected--;
 	}
@@ -84,23 +83,10 @@ uint32_t amble = 0;
 void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 	if (debugplot) putchar('C'); 
 
-	if (bitphase >= 0) {
-		thisbyte = (thisbyte << 1) | (thebit & 0b1);
-
-		bitphase++;
-
-		if (bitphase > 7) {
-			bitphase = 0;
-			process_byte(thisbyte, quiet);			
-		}
-	}
-
 	if (bitphase < 0) {
 		amble = (amble << 1) | (thebit & 0b1);
 
-		// "2D4C" = 0010'1101'0100'1100
-
-		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes
+		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
 			filter.hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
@@ -111,15 +97,23 @@ void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 			bitphase = 0;
 			crc = CRC_INIT;
 
-			//bitphase = -1; // temp
 			bytesexpected = -1; // tell the above section to expect length byte
+		}
+	} else {
+		thisbyte = (thisbyte << 1) | (thebit & 0b1);
+		bitphase++
+
+		if (bitphase > 7) {
+			bitphase = 0;
+			process_byte(thisbyte, quiet);			
 		}
 	}
 }
 
 void rfm_reset() {
-	bitphase = -1; // search for new preamble
-	filter.hold = false; // reset offset hold.
+	bytesexpected = 0;		// Length byte not expected yet.
+	bitphase = -1; 			// search for new preamble
+	filter.hold = false;	// reset offset hold.
 	thisbyte = 0;
 	amble = 0;
 }
