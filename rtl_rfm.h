@@ -15,7 +15,7 @@
 #include <rtl-sdr.h>
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 8
+#define DOWNSAMPLE 64
 
 bool quiet;
 bool debugplot;
