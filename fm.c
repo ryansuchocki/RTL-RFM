@@ -10,12 +10,7 @@ static inline int16_t abs16(int16_t value) {
 
 // Linear approximation of atan2() in int16-space. Calculated in four quadrants.
 // This relies on the fact that |sin(x)| - |cos(x)| is vaguely linear from x = 0 to tau/4
-//         y    
-//    \    |    /    
-//     II  |  I      
-//  -------+------- x
-//    III  |  IV     
-//         |        
+
 #define TAU INT16_MAX * 2
 
 static inline int16_t atan2_int16(int16_t y, int16_t x) {
@@ -27,9 +22,9 @@ static inline int16_t atan2_int16(int16_t y, int16_t x) {
 
     int32_t theta = (((TAU* 1/8) * ((absy - absx) << 16) / denom) >> 16); 
 
-    if (y >= 0) {
+    if (y >= 0) { // Note: Cartesian plane quadrants
     	if (x >= 0)	return (TAU* 1/8) + theta; // quadrant I 		Theta counts 'towards the y axis',
-    	else		return (TAU* 3/8) - theta; // quadrant II 		Therefore, negate it in quadrants II and IV
+    	else		return (TAU* 3/8) - theta; // quadrant II 		So, negate it in quadrants II and IV
     } else {
     	if (x < 0)	return (TAU*-3/8) + theta; // quadrant III. -3/8 = 5/8
     	else		return (TAU*-1/8) - theta; // quadrant IV.  -1/8 = 7/8

@@ -109,10 +109,6 @@ int32_t moving_average(int16_t sample) {
 // END OF MOVING AVERAGE
 
 void print_waveform(int16_t sample, int16_t magnitude) {
-	/*if (magnitude < 10) {		
-		return;
-	}*/
-
 	int x = 100 + (100 * sample / (INT16_MAX));
 	x = (x < 0) ? 0 : x;
 	x = (x > 200) ? 200 : x;
@@ -134,11 +130,7 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 
 	clk = (clk + 1) % CLKPERIOD;
 
-	//uint8_t b1 = fgetc(rtlstream);
-	//uint8_t b2 = fgetc(rtlstream);
-
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
-	//thissample = lopass(hipass((int16_t) (b1 | (b2<<8)) /*/ 2*/)); // make headroom for filter offset. Unnecessary! filter always moves it towards zero!
 	thissample = lopass(hipass(sample));
 
 	mavg = moving_average(thissample);
@@ -150,9 +142,7 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 		if (debugplot) printf("K");
 
 		if (clk > 0 && clk <= (CLKPERIOD/2)) {
-			clk -= (CLKPERIOD+1); // delay clock
-			//clk = clk - 1;		
-			//if (clk == 0) clk = -1*CLKPERIOD;						// delay clock		
+			clk -= (CLKPERIOD+1); // delay clock	
 			if (debugplot) printf ("^%d", clk); 		// clock has happened recently
 		} else if (clk > (CLKPERIOD/2) && clk < (CLKPERIOD)) {
 			clk = (clk + 1) % CLKPERIOD;			// advance clock 
@@ -165,7 +155,6 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 	uint8_t thebit = (mavg > 0) ? 1 : 0; // take the sign of the moving average window. Effectively a low pass with binary threshold...
 
 	if (debugplot) putchar('\n');
-
 
 	if (clk == 0) return(thebit);	
 	else return -1;
