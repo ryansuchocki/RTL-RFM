@@ -43,35 +43,9 @@ void fsk_cleanup() {
 
 // START OF HIGHPASS FILTER
 
-int16_t offsethold = 0;
 bool hold = false;
 
-int16_t hipass(int16_t sample) {
-	if (!hold) offsethold = process(&filter, sample) / filtersize;
 
-	return sample - offsethold;
-}
-
-// END OF HIGHPASS FILTER
-
-// START OF LOWPASS FILTER
-
-int16_t lopass(int16_t sample) {
-
-	return process(&filter2, sample) / filter2size;
-}
-
-// END OF LOWPASS FILTER
-
-// START OF MOVING AVERAGE
-
-int32_t moving_average(int16_t sample) {
-
-	return process(&filter3, sample);
-
-}
-
-// END OF MOVING AVERAGE
 
 void print_waveform(int16_t sample, int16_t magnitude) {
 	int x = 100 + (100 * sample / (INT16_MAX));
@@ -96,9 +70,9 @@ int8_t fsk_decode(int16_t sample, int16_t magnitude) {
 	clk = (clk + 1) % CLKPERIOD;
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
-	thissample = lopass(hipass(sample));
+	thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample, hold));
 
-	mavg = moving_average(thissample);
+	mavg = mavg_count(&filter3, thissample);
 
 	if (debugplot) print_waveform(thissample, magnitude);
 	
