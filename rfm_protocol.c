@@ -44,9 +44,11 @@ void print_sanitize(uint8_t buf[], uint8_t bufi) {
 void process_byte(uint8_t thebyte, bool quiet) {	
 	if (bytesexpected < 0) { //expecting length byte!
 		bytesexpected = thebyte + 2; // +2 for crc
-		//printf("BE: %d", bytesexpected);
 		docrc(thebyte);
-	} else if (bytesexpected > 0) {
+		return;
+	}
+
+	if (bytesexpected > 0) {
 		if (bytesexpected > 2) {
 			packet_buffer[packet_bi++] = thebyte;
 			docrc(thebyte);
@@ -64,10 +66,11 @@ void process_byte(uint8_t thebyte, bool quiet) {
 			if (!quiet) printf("CRC OK, \t<");
 			print_sanitize(packet_buffer, packet_bi);
 			if (!quiet) printf(">");
-
 			printf("\n");
 		} else {
-			if (!quiet) printf("CRC FAIL! [%02X] [%02X]\n", crc, thecrc);
+			if (!quiet) printf("CRC FAIL! [%02X] [%02X] \t<", crc, thecrc);
+			if (!quiet) print_sanitize(packet_buffer, packet_bi);
+			if (!quiet) printf(">\n");
 		}
 		
 		//printf("'%.*s'", packet_bi, packet_buffer);
@@ -91,13 +94,12 @@ void rfm_decode(uint8_t thebit, int samplerate, bool debugplot, bool quiet) {
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
 			float foffset = (filter.counthold/filter.size) * (samplerate / 32768.0) / 1000;
-			if (!quiet) printf(" (OFFSET %.2fkHz) ", foffset);
+			if (!quiet) printf("(OFFSET %.2fkHz) ", foffset);
 
-			packet_bi = 0;
-			bitphase = 0;
-			crc = CRC_INIT;
-
-			bytesexpected = -1; // tell the above section to expect length byte
+			packet_bi = 0;		// reset the packet buffer
+			bitphase = 0;		// lock to current bit phase
+			crc = CRC_INIT;		// reset CRC engine
+			bytesexpected = -1;	// tell the byte processor to expect a length byte
 		}
 	} else {
 		thisbyte = (thisbyte << 1) | (thebit & 0b1);
