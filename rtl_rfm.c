@@ -10,7 +10,7 @@
 
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 64
+#define DOWNSAMPLE 128
 
 bool quiet = false;
 bool debugplot = false;
@@ -36,21 +36,19 @@ int hw_init() {
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
-		uint16_t countI = 0;
-		uint16_t countQ = 0;
+		IQPair count = {0, 0};
 
 		for (uint32_t j = k; j < k+(DOWNSAMPLE*2); j+=2) {
-			countI += ((uint8_t) buf[j]);
-			countQ += ((uint8_t) buf[j+1]);
+			count.i += ((uint8_t) buf[j]);
+			count.q += ((uint8_t) buf[j+1]);
 		}
 
-		int8_t avgI = countI / DOWNSAMPLE - 128; // divide and convert to signed
-		int8_t avgQ = countQ / DOWNSAMPLE - 128;
+		IQPair avg = {count.i / DOWNSAMPLE - 128, count.q / DOWNSAMPLE - 128}; // divide and convert to signed
 
-		int32_t fm_magnitude_squared = avgI * avgI + avgQ * avgQ;
+		int32_t fm_magnitude_squared = avg.i * avg.i + avg.q * avg.q;
 
 		if (squelch(fm_magnitude_squared, debugplot)) {
-			int16_t fm = fm_demod(avgI, avgQ);
+			int16_t fm = fm_demod(avg);
 			int8_t bit = fsk_decode(fm, fm_magnitude_squared, debugplot);
 			if (bit >= 0) {
 				rfm_decode(bit, samplerate, quiet);

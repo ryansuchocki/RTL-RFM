@@ -15,4 +15,8 @@
 	#include <rtl-sdr.h>
 
 	// Project-wide globals can go here:
+	typedef struct IQPair {
+		int16_t i;
+		int16_t q;
+	} IQPair;
 #endif
