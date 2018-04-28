@@ -3,41 +3,41 @@
 
 bool mavg_init(Mavg *filter, uint16_t newsize) {
 
-	filter->size = newsize;
-	filter->data = malloc(sizeof(int16_t) * newsize);
-	filter->index = 0;
-	filter->count = 0;
-	filter->counthold = 0;
-	filter->hold = false;
+    filter->size = newsize;
+    filter->data = malloc(sizeof(int16_t) * newsize);
+    filter->index = 0;
+    filter->count = 0;
+    filter->counthold = 0;
+    filter->hold = false;
 
-	for (int i = 0; i < newsize; i++) filter->data[i] = 0;
+    for (int i = 0; i < newsize; i++) filter->data[i] = 0;
 
-	return true;
+    return true;
 }
 
 bool mavg_cleanup(Mavg *filter) {
-	
-	free(filter->data);
+    
+    free(filter->data);
 
-	return true;
+    return true;
 }
 
 int32_t mavg_count(Mavg *filter, int16_t sample) {
 
-	filter->index = (filter->index + 1) % filter->size;
-	filter->count += sample - filter->data[filter->index];
-	filter->data[filter->index] = sample;
+    filter->index = (filter->index + 1) % filter->size;
+    filter->count += sample - filter->data[filter->index];
+    filter->data[filter->index] = sample;
 
-	return filter->count;
+    return filter->count;
 }
 
 int16_t mavg_hipass(Mavg *filter, int16_t sample) {
 
-	if (!filter->hold) filter->counthold = mavg_count(filter, sample);
-	return sample - (filter->counthold / filter->size);
+    if (!filter->hold) filter->counthold = mavg_count(filter, sample);
+    return sample - (filter->counthold / filter->size);
 }
 
 int16_t mavg_lopass(Mavg *filter, int16_t sample) {
 
-	return mavg_count(filter, sample) / filter->size;
+    return mavg_count(filter, sample) / filter->size;
 }
