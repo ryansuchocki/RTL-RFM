@@ -18,17 +18,16 @@ void fsk_init(int freq, int samplerate, int baudrate, bool quiet) {
 
 	if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
-	mavg_init(&filter, filtersize);
-	mavg_init(&filter2, filter2size);
-	mavg_init(&filter3, windowsize);
+	mavg_init(&hipassfilter, filtersize);
+	mavg_init(&lopassfilter, filter2size);
+	mavg_init(&windowfilter, windowsize);
 }
 
 void fsk_cleanup() {
-	mavg_cleanup(&filter);
-	mavg_cleanup(&filter2);
-	mavg_cleanup(&filter3);
+	mavg_cleanup(&hipassfilter);
+	mavg_cleanup(&lopassfilter);
+	mavg_cleanup(&windowfilter);
 }
-
 
 void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared) {
 	#define SCOPEWIDTH 128
@@ -62,7 +61,7 @@ void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, 
 		} else if (clk > (windowsize/2) && clk < (windowsize)) {
 			printf("v%d", clk); 		// clock is happening soon
 		} else {
-			putchar('<');		// clock is locked on
+			putchar('<');				// clock is locked on
 		}		
 	}
 
@@ -78,8 +77,10 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 
 	clk = (clk + 1) % windowsize;
 
-	int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
-	uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
+	int16_t thissample = mavg_lopass(&lopassfilter, mavg_hipass(&hipassfilter, sample));
+	uint8_t thebit = (mavg_count(&windowfilter, thissample) > 0) ? 1 : 0;
+
+	if (debugplot) print_waveform(sample, thissample, prevsample, thebit, clk, magnitude_squared);
 
 	// Zero-Crossing Detector for phase correction:
 	if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
@@ -89,8 +90,6 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 			clk = (clk + 1) % windowsize;			// advance clock 
 		} // else clock locked on! Nothing to do...
 	}
-
-	if (debugplot) print_waveform(sample, thissample, prevsample, thebit, clk, magnitude_squared);
 
 	prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 

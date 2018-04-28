@@ -8,16 +8,11 @@
 #include "fsk.h"
 #include "rfm_protocol.h"
 
-
 #define BIGSAMPLERATE 2457600
 #define DOWNSAMPLE 64
 
-bool quiet = false;
-bool debugplot = false;
-int freq = 869412500;
-int gain = 496; // 49.6
-int ppm = 43;
-int baudrate = 4800;
+bool quiet = false, debugplot = false;
+int freq = 869412500, gain = 496, ppm = 43, baudrate = 4800;
 int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // multiple of baudrate
 
 rtlsdr_dev_t *dev = NULL;
@@ -36,8 +31,7 @@ int hw_init() {
 
 void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
 	for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
-		uint16_t countI = 0;
-		uint16_t countQ = 0;
+		uint16_t countI = 0, countQ = 0;
 
 		for (uint32_t j = k; j < k+(DOWNSAMPLE*2); j+=2) {
 			countI += ((uint8_t) buf[j]);

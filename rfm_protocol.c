@@ -1,19 +1,29 @@
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
-
 #include "fsk.h" // for filters
 
-int bytesexpected = 0;
-int bitphase = -1;
+void print_sanitize(uint8_t buf[], uint8_t bufi) {
+
+	for (int i = 0; i < bufi; i++) {
+		uint8_t chr = buf[i];
+
+		if (chr >= 32) {
+			putchar(chr);
+		} else {
+			printf("[%02X]", chr);
+		}
+	}
+}
 
 #define CRC_INIT 0x1D0F
 #define CRC_POLY 0x1021
 #define CRC_POST 0xFFFF
-uint16_t crc = 0x1D0F;
 
+uint16_t crc = CRC_INIT;
 uint16_t thecrc = 0;
 
 void docrc(uint8_t thebyte) {
+
 	crc = crc ^ (thebyte << 8);
 
 	for (int i = 0; i < 8; i++) {
@@ -28,20 +38,11 @@ void docrc(uint8_t thebyte) {
 
 uint8_t packet_buffer[256];
 uint8_t packet_bi = 0;
-
-void print_sanitize(uint8_t buf[], uint8_t bufi) {
-	for (int i = 0; i < bufi; i++) {
-		uint8_t chr = buf[i];
-
-		if (chr >= 32) {
-			putchar(chr);
-		} else {
-			printf("[%02X]", chr);
-		}
-	}
-}
+int8_t bytesexpected = 0;
+int8_t bitphase = -1;
 
 void process_byte(uint8_t thebyte, bool quiet) {	
+
 	if (bytesexpected < 0) { //expecting length byte!
 		bytesexpected = thebyte + 2; // +2 for crc
 		docrc(thebyte);
@@ -73,10 +74,8 @@ void process_byte(uint8_t thebyte, bool quiet) {
 			if (!quiet) printf(">\n");
 		}
 		
-		//printf("'%.*s'", packet_bi, packet_buffer);
 		bitphase = -1; // search for new preamble
-
-		filter.hold = false; // reset offset hold.
+		hipassfilter.hold = false; // reset offset hold.
 	}
 }
 
@@ -89,10 +88,10 @@ void rfm_decode(uint8_t thebit, int samplerate, bool quiet) {
 		amble = (amble << 1) | (thebit & 0b1);
 
 		if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
-			filter.hold = true;
+			hipassfilter.hold = true;
 
 			if (!quiet) printf(">> GOT SYNC WORD, ");
-			float foffset = (filter.counthold/filter.size) * (samplerate / 32768.0) / 1000;
+			float foffset = (hipassfilter.counthold/hipassfilter.size) * (samplerate / 32768.0) / 1000;
 			if (!quiet) printf("(OFFSET %.2fkHz) ", foffset);
 
 			packet_bi = 0;		// reset the packet buffer
@@ -112,9 +111,10 @@ void rfm_decode(uint8_t thebit, int samplerate, bool quiet) {
 }
 
 void rfm_reset() {
+
 	bytesexpected = 0;		// Length byte not expected yet.
 	bitphase = -1; 			// search for new preamble
-	filter.hold = false;	// reset offset hold.
+	hipassfilter.hold = false;	// reset offset hold.
 	thisbyte = 0;
 	amble = 0;
 }
