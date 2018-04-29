@@ -26,7 +26,8 @@
 
     // Project-wide globals:
 
-    typedef struct IQPair {
+    typedef struct IQPair
+    {
         int16_t i;
         int16_t q;
     } IQPair;

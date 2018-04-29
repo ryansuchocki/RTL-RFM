@@ -25,10 +25,13 @@ static inline int16_t atan2_int16(int16_t y, int16_t x)
 
     int16_t theta = ((numerator << 3) / denominator) >> 3;
 
-    if (y >= 0) { // Note: Cartesian plane quadrants
+    if (y >= 0) // Note: Cartesian plane quadrants
+    { 
         if (x >= 0) return (TAU* 1/8) + theta; // quadrant I    Theta counts 'towards the y axis',
         else        return (TAU* 3/8) - theta; // quadrant II   So, negate it in quadrants II and IV
-    } else {
+    }
+    else
+    {
         if (x < 0)  return (TAU*-3/8) + theta; // quadrant III. -3/8 = 5/8
         else        return (TAU*-1/8) - theta; // quadrant IV.  -1/8 = 7/8
     }
@@ -41,7 +44,8 @@ static inline IQPair complex_conjugate(IQPair arg)
 
 static inline IQPair complex_multiply(IQPair arg1, IQPair arg2)
 {
-    return (IQPair) {
+    return (IQPair)
+    {
         .q = (arg1.q * arg2.q) - (arg1.i * arg2.i),
         .i = (arg1.q * arg2.i) + (arg1.i * arg2.q)
     };

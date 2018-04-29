@@ -24,10 +24,11 @@ int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // mult
 
 rtlsdr_dev_t *dev = NULL;
 
-int hw_init() {
+int hw_init()
+{
     //float freq_corr = (float)freq * (1 - ppm / 1000000.0);
 
-    //printv("Corrected Frequency: %.0f Hz", freq_corr);
+    //printv("Corrected Frequency: %.0f FHz", freq_corr);
 
     if (rtlsdr_open(&dev, 0) < 0) return -1;
     if (rtlsdr_set_center_freq(dev, freq) < 0) return -2; // Set freq before sample rate to avoid "PLL NOT LOCKED"
@@ -67,7 +68,8 @@ void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx) {
 
     for (int i = 0; i < rbi; i++)
     {
-        if (squelch(resampled_buffer[i], rfm_reset)) {
+        if (squelch(resampled_buffer[i], rfm_reset))
+        {
             rfm_decode(fsk_decode(fm_demod(resampled_buffer[i])));
         }
     }
@@ -93,7 +95,8 @@ void printv(const char *format, ...)
     va_end(args);
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
         "\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
         "Option flags:\n"
@@ -106,8 +109,10 @@ int main (int argc, char **argv) {
 
     int c;
 
-    while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1) {
-        switch (c)  {
+    while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1)
+    {
+        switch (c)
+        {
             case 'h':   fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
             case 'q':   quiet = true;                                       break;
             case 'd':   debugplot = true;                                   break;

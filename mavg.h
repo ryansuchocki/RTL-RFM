@@ -1,7 +1,8 @@
 #ifndef _MAVG_H_GUARD
     #define _MAVG_H_GUARD
 
-    typedef struct {
+    typedef struct
+    {
         uint16_t size;
         int16_t *data;
         uint16_t index;

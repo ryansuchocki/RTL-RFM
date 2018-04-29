@@ -13,7 +13,8 @@ uint16_t crc = CRC_INIT;
 
 uint16_t thecrc = 0;
 
-void docrc(uint8_t thebyte) {
+void docrc(uint8_t thebyte)
+{
     crc = crc ^ (thebyte << 8);
 
     for (int i = 0; i < 8; i++) {
@@ -25,41 +26,55 @@ void docrc(uint8_t thebyte) {
 uint8_t packet_buffer[256];
 uint8_t packet_bi = 0;
 
-void print_sanitize(bool force, uint8_t buf[], uint8_t bufi) {
-    for (int i = 0; i < bufi; i++) {
+void print_sanitize(bool force, uint8_t buf[], uint8_t bufi)
+{
+    for (int i = 0; i < bufi; i++)
+    {
         uint8_t chr = buf[i];
 
         if (force)
         {
-            if (chr >= 32) {
+            if (chr >= 32)
+            {
                 putchar(chr);
-            } else {
+            }
+            else
+            {
                 printf("[%02X]", chr);
             }
         }
         else
         {
-            if (chr >= 32) {
+            if (chr >= 32)
+            {
                 printv("%c", chr);
-            } else {
+            }
+            else
+            {
                 printv("[%02X]", chr);
             }
         }
     }
 }
 
-void process_byte(uint8_t thebyte) {    
-    if (bytesexpected < 0) { //expecting length byte!
+void process_byte(uint8_t thebyte)
+{    
+    if (bytesexpected < 0) //expecting length byte!
+    { 
         bytesexpected = thebyte + 2; // +2 for crc
         docrc(thebyte);
         return;
     }
 
-    if (bytesexpected > 0) {
-        if (bytesexpected > 2) {
+    if (bytesexpected > 0)
+    {
+        if (bytesexpected > 2)
+        {
             packet_buffer[packet_bi++] = thebyte;
             docrc(thebyte);
-        } else {
+        }
+        else
+        {
             thecrc <<= 8;
             thecrc |= thebyte;
         }
@@ -67,9 +82,11 @@ void process_byte(uint8_t thebyte) {
         bytesexpected--;
     }
 
-    if (bytesexpected == 0) {
+    if (bytesexpected == 0)
+    {
         crc ^= CRC_POST;
-        if (crc == thecrc) {
+        if (crc == thecrc)
+        {
             printv("CRC OK, \t<");
             print_sanitize(true, packet_buffer, packet_bi);
             printv(">");
@@ -95,10 +112,12 @@ extern int freq;
 void rfm_decode(uint8_t thebit) {
     if (thebit > 1) return;
 
-    if (bitphase < 0) {
+    if (bitphase < 0)
+    {
         amble = (amble << 1) | (thebit & 0b1);
 
-        if ((amble & 0x0000FFFF) == 0x00002D4C) { // detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
+        if ((amble & 0x0000FFFF) == 0x00002D4C)// detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
+        {
             hipass_filter.hold = true;
 
             printv(">> GOT SYNC WORD, ");
@@ -111,18 +130,22 @@ void rfm_decode(uint8_t thebit) {
             crc = CRC_INIT;     // reset CRC engine
             bytesexpected = -1; // tell the byte processor to expect a length byte
         }
-    } else {
+    }
+    else
+    {
         thisbyte = (thisbyte << 1) | (thebit & 0b1);
         bitphase++;
 
-        if (bitphase > 7) {
+        if (bitphase > 7) 
+        {
             bitphase = 0;
             process_byte(thisbyte);          
         }
     }
 }
 
-void rfm_reset() {
+void rfm_reset()
+{
     bytesexpected = 0;      // Length byte not expected yet.
     bitphase = -1;          // search for new preamble
     hipass_filter.hold = false;    // reset offset hold.
