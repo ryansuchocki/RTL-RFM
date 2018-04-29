@@ -8,11 +8,13 @@ int windowsize;
 void fsk_init(int freq, int samplerate, int baudrate)
 {
     windowsize = samplerate / baudrate;
-    float fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16?
+
+    float fc = baudrate / 32; // Fc = mavg filter cutoff frequency. Aim for baud/16?
     int hipass_filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 
-    float fc2 = baudrate * 0.5; /// 1.5;
+    float fc2 = baudrate * 0.8;
     int lopass_filtersize = ((float) (0.443 * (float) samplerate)) / fc2;
+
     lopass_filtersize = (lopass_filtersize < 1) ? 1 : lopass_filtersize;
 
     printv(">> Setting filters at '%.2fHz < signal < %.2fHz' (hipass size: %i, lopass size: %i, window size: %i)\n", fc, fc2, hipass_filtersize, lopass_filtersize, windowsize);
