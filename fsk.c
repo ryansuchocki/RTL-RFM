@@ -33,17 +33,15 @@ void fsk_cleanup()
     mavg_cleanup(&mavg_filter);
 }
 
+#define SCOPEWIDTH 128
 
 void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared)
 {
-    #define SCOPEWIDTH 128
     int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * unfiltered) / (INT16_MAX);
-    x = (x < 0) ? 0 : x;
-    x = (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
+    x = (x < 0) ? 0 : (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
+
     int y = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * thissample) / (INT16_MAX);
-    y = (y < 0) ? 0 : y;
-    y = (y > SCOPEWIDTH) ? SCOPEWIDTH : y;
-    //printf("%08d", sample);
+    y = (y < 0) ? 0 : (y > SCOPEWIDTH) ? SCOPEWIDTH : y;
 
     for (int i = 0; i < SCOPEWIDTH; i++)
     {

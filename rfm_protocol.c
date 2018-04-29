@@ -10,16 +10,15 @@ int bitphase = -1;
 #define CRC_POLY 0x1021
 #define CRC_POST 0xFFFF
 uint16_t crc = CRC_INIT;
-
 uint16_t thecrc = 0;
 
 void docrc(uint8_t thebyte)
 {
     crc = crc ^ (thebyte << 8);
 
-    for (int i = 0; i < 8; i++) {
-        crc <<= 1;
-        if (crc & 0x8000) crc ^= CRC_POLY;
+    for (int i = 0; i < 8; i++)
+    {
+        crc = crc & 0x8000 ? (crc << 1) ^ CRC_POLY : crc << 1;
     }
 }
 
