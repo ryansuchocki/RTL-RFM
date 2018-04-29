@@ -9,51 +9,88 @@
 #include "rfm_protocol.h"
 
 #define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 128
+#define DOWNSAMPLE 64 // CANNOT BE MORE THAN 128!!
 
-bool quiet = false, debugplot = false;
-int freq = 869412500, gain = 496, ppm = 43, baudrate = 4800;
+#define DRIVER_BUFFER_SIZE 16 * 32 * 512
+#define RESAMP_BUFFER_SIZE DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2
+
+bool quiet = false;
+bool debugplot = false;
+int freq = 869412500;
+int gain = 496; // 49.6
+int ppm = 0;
+int baudrate = 4800;
 int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // multiple of baudrate
 
 rtlsdr_dev_t *dev = NULL;
 
 int hw_init() {
+    //float freq_corr = (float)freq * (1 - ppm / 1000000.0);
+
+    //printv("Corrected Frequency: %.0f Hz", freq_corr);
+
     if (rtlsdr_open(&dev, 0) < 0) return -1;
     if (rtlsdr_set_center_freq(dev, freq) < 0) return -2; // Set freq before sample rate to avoid "PLL NOT LOCKED"
     if (rtlsdr_set_sample_rate(dev, BIGSAMPLERATE) < 0) return -3;
     if (rtlsdr_set_tuner_gain_mode(dev, 1) < 0) return -4;
     if (rtlsdr_set_tuner_gain(dev, gain) < 0) return -5;
-    if (rtlsdr_set_freq_correction(dev, ppm) < 0) return -6;
+    if (ppm != 0 && rtlsdr_set_freq_correction(dev, ppm) < 0) return -6;
+    //rtlsdr_set_freq_correction(dev, 0);
     if (rtlsdr_reset_buffer(dev) < 0) return -7;
 
     return 0;
 }
 
-void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx) {
-    for (uint32_t k = 0; k < len; k+=(DOWNSAMPLE*2)) {
-        IQPair count = {0, 0};
+IQPair resampled_buffer[RESAMP_BUFFER_SIZE];
+uint16_t rbi = 0;
 
-        for (uint32_t j = k; j < k+(DOWNSAMPLE*2); j+=2) {
-            count.i += ((uint8_t) buf[j]);
-            count.q += ((uint8_t) buf[j+1]);
-        }
+void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx) {
+    UNUSED(ctx);
 
-        IQPair avg = {count.i / DOWNSAMPLE - 128, count.q / DOWNSAMPLE - 128}; // divide and convert to signed
+    uint32_t acci = 0, accq = 0;
 
-        int32_t fm_magnitude_squared = avg.i * avg.i + avg.q * avg.q;
+    for (int i = 0, count = 0; i < (int)len-1; i+=2, count++)
+    {
+        acci += (buf[i]);
+        accq += (buf[i+1]);
 
-        if (squelch(fm_magnitude_squared, debugplot)) {
-            int16_t fm = fm_demod(avg);
-            int8_t bit = fsk_decode(fm, fm_magnitude_squared, debugplot);
-            if (bit >= 0) {
-                rfm_decode(bit, samplerate, quiet);
-            }
+        if (count == DOWNSAMPLE)
+        {
+            resampled_buffer[rbi++] = (IQPair)
+            {
+                .i = acci / DOWNSAMPLE - 128,
+                .q = accq / DOWNSAMPLE - 128
+            }; // divide and convert to signed
+            count = acci = accq = 0;
         }
     }
+
+    for (int i = 0; i < rbi; i++)
+    {
+        if (squelch(resampled_buffer[i], rfm_reset)) {
+            rfm_decode(fsk_decode(fm_demod(resampled_buffer[i])));
+        }
+    }
+
+    rbi = 0;
 }
 
-void intHandler(int signal) {
+void intHandler(int signum)
+{
+    printf(">> Caught signal %d, cancelling...", signum);
+
     rtlsdr_cancel_async(dev);
+}
+
+void printv(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    if(!quiet)
+        vprintf(format, args);
+
+    va_end(args);
 }
 
 int main (int argc, char **argv) {
@@ -65,7 +102,7 @@ int main (int argc, char **argv) {
         "  -d    Show Debug Plot\n"
         "  -f    Frequency [869412500]\n"
         "  -g    Gain [49.6]\n"
-        "  -p    PPM error [43]\n";
+        "  -p    PPM error\n";
 
     int c;
 
@@ -84,23 +121,29 @@ int main (int argc, char **argv) {
 
     signal(SIGINT, intHandler);
 
-    if (!quiet) printf(">> STARTING RTL_RFM ...\n");
+    printv(">> STARTING RTL_RFM ...\n");
 
-    fsk_init(freq, samplerate, baudrate, quiet);
+    fsk_init(freq, samplerate, baudrate);
 
     int error = hw_init();
-    if (error >= 0) {
-        if (!quiet) printf(">> RTL_RFM READY\n\n");
-    } else {
-        fprintf(stderr, ">> INIT FAILED. (%d)", error);
+
+    if (error >= 0)
+    {
+        printv(">> RTL_RFM READY\n\n");
+    }
+    else
+    {
+        fprintf(stderr, ">> INIT FAILED. (%d)\n", error);
         exit(EXIT_FAILURE);
     }
 
-    rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, 262144);
+    rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, DRIVER_BUFFER_SIZE);
+
+    rtlsdr_close(dev);
 
     fsk_cleanup();
 
-    if (!quiet) printf("\n>> RTL_FM FINISHED. GoodBye!\n");
+    printv("\n>> RTL_FM FINISHED. GoodBye!\n");
 
     return(0);
 }

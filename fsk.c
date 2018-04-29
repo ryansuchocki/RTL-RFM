@@ -5,29 +5,30 @@
 
 int windowsize;
 
-void fsk_init(int freq, int samplerate, int baudrate, bool quiet) {
+void fsk_init(int freq, int samplerate, int baudrate) {
     windowsize = samplerate / baudrate;
     float fc = baudrate / 32; // Fc = mavg filter curoff frequency. Aim for baud/16?
-    int filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
+    int hipass_filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
 
     float fc2 = baudrate * 0.5; /// 1.5;
-    int filter2size = ((float) (0.443 * (float) samplerate)) / fc2;
-    filter2size = (filter2size < 1) ? 1 : filter2size;
+    int lopass_filtersize = ((float) (0.443 * (float) samplerate)) / fc2;
+    lopass_filtersize = (lopass_filtersize < 1) ? 1 : lopass_filtersize;
 
-    if (!quiet) printf(">> Setting filters at '%.2fHz < signal < %.2fHz' (hipass size: %i, lopass size: %i, window size: %i)\n", fc, fc2, filtersize, filter2size, windowsize);
+    printv(">> Setting filters at '%.2fHz < signal < %.2fHz' (hipass size: %i, lopass size: %i, window size: %i)\n", fc, fc2, hipass_filtersize, lopass_filtersize, windowsize);
 
-    if (!quiet) printf(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
+    printv(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
 
-    mavg_init(&filter, filtersize);
-    mavg_init(&filter2, filter2size);
-    mavg_init(&filter3, windowsize);
+    mavg_init(&hipass_filter, hipass_filtersize);
+    mavg_init(&lopass_filter, lopass_filtersize);
+    mavg_init(&mavg_filter, windowsize);
 }
 
 void fsk_cleanup() {
-    mavg_cleanup(&filter);
-    mavg_cleanup(&filter2);
-    mavg_cleanup(&filter3);
+    mavg_cleanup(&hipass_filter);
+    mavg_cleanup(&lopass_filter);
+    mavg_cleanup(&mavg_filter);
 }
+
 
 void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared) {
     #define SCOPEWIDTH 128
@@ -70,20 +71,23 @@ void print_waveform(int16_t unfiltered, int16_t thissample, int16_t prevsample, 
     printf("\n");
 }
 
-int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
+extern bool debugplot;
+extern int32_t magnitude_squared;
 
+uint8_t fsk_decode(int16_t sample)
+{
     static int clk = 1;
     static int16_t prevsample = 0;
 
     clk = (clk + 1) % windowsize;
 
-    int16_t thissample = mavg_lopass(&filter2, mavg_hipass(&filter, sample));
-    uint8_t thebit = (mavg_count(&filter3, thissample) > 0) ? 1 : 0;
+    int16_t thissample = mavg_hipass(&hipass_filter, mavg_lopass(&lopass_filter, sample));
+    uint8_t thebit = (mavg_count(&mavg_filter, thissample) > 0) ? 1 : 0;
 
     // Zero-Crossing Detector for phase correction:
     if ((thissample < 0 && prevsample >= 0) || (thissample > 0 && prevsample <= 0)) {
         if (clk > 0 && clk <= (windowsize/2)) {
-            clk -= (windowsize+1); // delay clock   
+            clk -= (windowsize+1); // delay clock
         } else if (clk > (windowsize/2) && clk < (windowsize)) {
             clk = (clk + 1) % windowsize;           // advance clock 
         } // else clock locked on! Nothing to do...
@@ -93,5 +97,5 @@ int8_t fsk_decode(int16_t sample, int32_t magnitude_squared, bool debugplot) {
 
     prevsample = thissample; // record previous sample for the purposes of zero-crossing detection
 
-    if (clk) return -1; else return thebit; // Return the bit when clock == 0!
+    return clk ? 2 : thebit; // Process the bit when clock == 0!
 }

@@ -1,7 +1,8 @@
 #include "rtl_rfm.h"
 #include "fm.h"
 
-static inline int16_t abs16(int16_t value) {
+static inline int16_t abs16(int16_t value)
+{
     uint16_t temp = value >> 15;     // make a mask of the sign bit
     value ^= temp;                   // toggle the bits if value is negative
     value += temp & 1;               // add one if value was negative
@@ -13,9 +14,9 @@ static inline int16_t abs16(int16_t value) {
 
 #define TAU INT16_MAX * 2
 
-static inline int16_t atan2_int16(int16_t y, int16_t x) {
-    int16_t absx = abs16(x);
-    int16_t absy = abs16(y);
+static inline int16_t atan2_int16(int16_t y, int16_t x)
+{
+    int16_t absx = abs16(x), absy = abs16(y);
 
     int32_t denominator = absy + absx;
     if (denominator == 0) return 0; // avoid DBZ and skip rest of function
@@ -33,30 +34,24 @@ static inline int16_t atan2_int16(int16_t y, int16_t x) {
     }
 }
 
-static inline IQPair complex_conjugate(IQPair arg) {
-    return (IQPair) {arg.q, -arg.i};
+static inline IQPair complex_conjugate(IQPair arg)
+{
+    return (IQPair) {.q=arg.q, .i=-arg.i};
 }
 
-static inline IQPair complex_multiply(IQPair arg1, IQPair arg2) {
+static inline IQPair complex_multiply(IQPair arg1, IQPair arg2)
+{
     return (IQPair) {
-        (arg1.q * arg2.q) - (arg1.i * arg2.i),
-        (arg1.q * arg2.i) + (arg1.i * arg2.q)
+        .q = (arg1.q * arg2.q) - (arg1.i * arg2.i),
+        .i = (arg1.q * arg2.i) + (arg1.i * arg2.q)
     };
 }
 
 IQPair previous = {0, 0};
 
-int16_t fm_demod(IQPair sample) {
-    
-    // Complex-multiply <i,q> with the conjugate of <pi,pq>
-    //int32_t ppr = sample.i * previous.i + sample.q * previous.q;  // May exactly overflow an int16_t (-128*-128 + -128*-128)
-    //int32_t ppi = sample.q * previous.i - sample.i * previous.q;
-
+int16_t fm_demod(IQPair sample)
+{
     IQPair product = complex_multiply(sample, complex_conjugate(previous));
-
-    int16_t angle = atan2_int16(product.i, product.q);
-
     previous = sample;
-
-    return angle;
+    return -atan2_int16(product.i, product.q);
 }

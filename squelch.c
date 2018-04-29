@@ -1,15 +1,19 @@
 #include "rtl_rfm.h"
 #include "squelch.h"
 
-#include "rfm_protocol.h"
-
 #define SQUELCH_THRESH 10
 #define SQUELCH_NUM 16
 
 bool squelch_state = false; // 0 is squelched, 1 is receiving
 int squelch_count = 0;
 
-bool squelch(int32_t magnitude_squared, bool debugplot) {
+int32_t magnitude_squared;
+extern bool debugplot;
+
+bool squelch(IQPair sample, CB_VOID open_cb)
+{
+    magnitude_squared = sample.i * sample.i + sample.q * sample.q;
+
     if (squelch_state) {
         if (magnitude_squared < (SQUELCH_THRESH * SQUELCH_THRESH)) {
             squelch_count--;
@@ -17,7 +21,7 @@ bool squelch(int32_t magnitude_squared, bool debugplot) {
                 squelch_state = false;
 
                 if (debugplot) fprintf(stderr, "SQUELCH CLOSE");
-                rfm_reset();
+                open_cb();
             }
         } else {
             squelch_count = SQUELCH_NUM;
