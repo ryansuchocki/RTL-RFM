@@ -1,5 +1,5 @@
 TARGET = rtl_rfm
-LIBS = -lm $(shell pkg-config --libs librtlsdr)
+LIBS = -lm $(shell pkg-config --libs librtlsdr) -pthread
 CC = gcc
 CFLAGS = -g -std=gnu11 -Wall -Wextra -O3 -W $(shell pkg-config --cflags librtlsdr)
 

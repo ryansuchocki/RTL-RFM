@@ -21,8 +21,7 @@
         #include <signal.h>
         #include <stdarg.h>
 
-        // Libraries
-        #include <rtl-sdr.h>
+        #include <pthread.h>
 
     // Project-wide globals:
 

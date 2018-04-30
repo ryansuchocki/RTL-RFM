@@ -3,16 +3,14 @@
 
 #include "rtl_rfm.h"
 
+#include "rb.h"
+#include "rtl_sdr_driver.h"
 #include "squelch.h"
 #include "fm.h"
 #include "fsk.h"
 #include "rfm_protocol.h"
 
-#define BIGSAMPLERATE 2457600
-#define DOWNSAMPLE 64 // CANNOT BE MORE THAN 128!!
-
-#define DRIVER_BUFFER_SIZE (16 * 32 * 512)
-#define RESAMP_BUFFER_SIZE (DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2)
+#define RESAMP_BUFFER_SIZE 100 //(DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2)
 
 bool quiet = false;
 bool debugplot = false;
@@ -20,83 +18,9 @@ int freq = 869412500;
 int gain = 496; // 49.6
 int ppm = 0;
 int baudrate = 4800;
-int samplerate = BIGSAMPLERATE/DOWNSAMPLE;/*31200;*/ /*19200;*/ //38400; // multiple of baudrate
+int samplerate = 38400;
 
-rtlsdr_dev_t *dev = NULL;
-
-int hw_init()
-{
-    //float freq_corr = (float)freq * (1 - ppm / 1000000.0);
-
-    //printv("Corrected Frequency: %.0f FHz", freq_corr);
-
-    if (rtlsdr_open(&dev, 0) < 0) return -1;
-    if (rtlsdr_set_center_freq(dev, freq) < 0) return -2; // Set freq before sample rate to avoid "PLL NOT LOCKED"
-    if (rtlsdr_set_sample_rate(dev, BIGSAMPLERATE) < 0) return -3;
-    if (rtlsdr_set_tuner_gain_mode(dev, 1) < 0) return -4;
-    if (rtlsdr_set_tuner_gain(dev, gain) < 0) return -5;
-    if (ppm != 0 && rtlsdr_set_freq_correction(dev, ppm) < 0) return -6;
-    //rtlsdr_set_freq_correction(dev, 0);
-    if (rtlsdr_reset_buffer(dev) < 0) return -7;
-
-    return 0;
-}
-
-static inline void handle_sample(IQPair sample)
-{
-    if (squelch(sample, rfm_reset))
-    {
-        rfm_decode(fsk_decode(fm_demod(sample)));
-    }
-}
-
-IQPair resampled_buffer[RESAMP_BUFFER_SIZE];
-uint16_t rbi = 0, rbx = 0;
-
-void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx) {
-    UNUSED(ctx);
-
-    uint32_t acci = 0, accq = 0;
-
-    for (int i = 0, count = 0; i < (int)len-1; i+=2, count++)
-    {
-        acci += (buf[i]);
-        accq += (buf[i+1]);
-
-        if (count == DOWNSAMPLE)
-        {
-            IQPair new = {
-                .i = acci / DOWNSAMPLE - 128,
-                .q = accq / DOWNSAMPLE - 128
-            }; // divide and convert to signed
-
-            count = acci = accq = 0;
-
-            if ((rbi + 1) % RESAMP_BUFFER_SIZE == rbx)
-            {
-                printf("FATAL ERROR: RING BUFFER OVERFLOW!\n");
-                exit(1);
-            }
-            resampled_buffer[rbi] = new;
-            rbi = (rbi + 1) % RESAMP_BUFFER_SIZE;
-
-            //handle_sample(new);
-        }
-    }
-
-    while (rbx != rbi)
-    {
-        handle_sample(resampled_buffer[rbx]);
-        rbx = (rbx + 1) % RESAMP_BUFFER_SIZE;
-    }
-}
-
-void intHandler(int signum)
-{
-    printf(">> Caught signal %d, cancelling...", signum);
-
-    rtlsdr_cancel_async(dev);
-}
+rb_info_t rb;
 
 void printv(const char *format, ...)
 {
@@ -109,8 +33,38 @@ void printv(const char *format, ...)
     va_end(args);
 }
 
+volatile sig_atomic_t running = 1;
+
+void samplehandlerfn(IQPair sample)
+{
+    rb_put(rb, sample);
+}
+
+void main_thread_fn(void)
+{
+    while (running)
+    {
+        IQPair sample = rb_get(rb);
+
+        if (squelch(sample, rfm_reset))
+        {
+            rfm_decode(fsk_decode(fm_demod(sample)));
+        }
+    }
+}
+
+void intHandler(int signum)
+{
+    printf(">> Caught signal %d, cancelling...", signum);
+
+    running = 0;
+    rtl_sdr_cancel();
+}
+
 int main (int argc, char **argv)
 {
+    rb = new_rb(RESAMP_BUFFER_SIZE);
+
     char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
         "\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
         "Option flags:\n"
@@ -144,23 +98,38 @@ int main (int argc, char **argv)
 
     fsk_init(freq, samplerate, baudrate);
 
-    int error = hw_init();
+    int error = hw_init(freq, samplerate, gain, ppm, samplehandlerfn);
 
-    if (error >= 0)
-    {
-        printv(">> RTL_RFM READY\n\n");
-    }
-    else
+    if (error < 0)
     {
         fprintf(stderr, ">> INIT FAILED. (%d)\n", error);
         exit(EXIT_FAILURE);
     }
 
-    rtlsdr_read_async(dev, rtlsdr_callback, NULL, 0, DRIVER_BUFFER_SIZE);
+    printv(">> RTL_RFM READY\n\n");
 
-    rtlsdr_close(dev);
+    pthread_t driver_thread;
+
+    if (pthread_create(&driver_thread, NULL, driver_thread_fn, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        return 1;
+    }
+
+    main_thread_fn();
+
+    printv("\n>> Main Thread Exited\n");
+
+    if (pthread_join(driver_thread, NULL))
+    {
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+    }
+
+    printv(">> Driver Thread Exited\n");
 
     fsk_cleanup();
+    free_rb(rb);
 
     printv("\n>> RTL_FM FINISHED. GoodBye!\n");
 
