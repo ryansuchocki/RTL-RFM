@@ -11,8 +11,8 @@
 #define BIGSAMPLERATE 2457600
 #define DOWNSAMPLE 64 // CANNOT BE MORE THAN 128!!
 
-#define DRIVER_BUFFER_SIZE 16 * 32 * 512
-#define RESAMP_BUFFER_SIZE DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2
+#define DRIVER_BUFFER_SIZE (16 * 32 * 512)
+#define RESAMP_BUFFER_SIZE (DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2)
 
 bool quiet = false;
 bool debugplot = false;
@@ -42,8 +42,16 @@ int hw_init()
     return 0;
 }
 
+static inline void handle_sample(IQPair sample)
+{
+    if (squelch(sample, rfm_reset))
+    {
+        rfm_decode(fsk_decode(fm_demod(sample)));
+    }
+}
+
 IQPair resampled_buffer[RESAMP_BUFFER_SIZE];
-uint16_t rbi = 0;
+uint16_t rbi = 0, rbx = 0;
 
 void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx) {
     UNUSED(ctx);
@@ -57,24 +65,30 @@ void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx) {
 
         if (count == DOWNSAMPLE)
         {
-            resampled_buffer[rbi++] = (IQPair)
-            {
+            IQPair new = {
                 .i = acci / DOWNSAMPLE - 128,
                 .q = accq / DOWNSAMPLE - 128
             }; // divide and convert to signed
+
             count = acci = accq = 0;
+
+            if ((rbi + 1) % RESAMP_BUFFER_SIZE == rbx)
+            {
+                printf("FATAL ERROR: RING BUFFER OVERFLOW!\n");
+                exit(1);
+            }
+            resampled_buffer[rbi] = new;
+            rbi = (rbi + 1) % RESAMP_BUFFER_SIZE;
+
+            //handle_sample(new);
         }
     }
 
-    for (int i = 0; i < rbi; i++)
+    while (rbx != rbi)
     {
-        if (squelch(resampled_buffer[i], rfm_reset))
-        {
-            rfm_decode(fsk_decode(fm_demod(resampled_buffer[i])));
-        }
+        handle_sample(resampled_buffer[rbx]);
+        rbx = (rbx + 1) % RESAMP_BUFFER_SIZE;
     }
-
-    rbi = 0;
 }
 
 void intHandler(int signum)
