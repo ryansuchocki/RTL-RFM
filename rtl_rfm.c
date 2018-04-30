@@ -10,7 +10,7 @@
 #include "fsk.h"
 #include "rfm_protocol.h"
 
-#define RESAMP_BUFFER_SIZE 100 //(DRIVER_BUFFER_SIZE / DOWNSAMPLE / 2)
+#define RESAMP_BUFFER_SIZE 2048 * 32 // 2048 resampled in one burst from driver
 
 bool quiet = false;
 bool debugplot = false;
@@ -21,6 +21,7 @@ int baudrate = 4800;
 int samplerate = 38400;
 
 rb_info_t rb;
+RTLSDRInfo_t device;
 
 void printv(const char *format, ...)
 {
@@ -55,10 +56,11 @@ void main_thread_fn(void)
 
 void intHandler(int signum)
 {
-    printf(">> Caught signal %d, cancelling...", signum);
+    printf("\n\n>> Caught signal %d, cancelling...\n", signum);
 
     running = 0;
-    rtl_sdr_cancel();
+    rtl_sdr_cancel(device);
+    rb_cancel(rb);
 }
 
 int main (int argc, char **argv)
@@ -98,7 +100,7 @@ int main (int argc, char **argv)
 
     fsk_init(freq, samplerate, baudrate);
 
-    int error = hw_init(freq, samplerate, gain, ppm, samplehandlerfn);
+    int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn);
 
     if (error < 0)
     {
@@ -108,30 +110,30 @@ int main (int argc, char **argv)
 
     printv(">> RTL_RFM READY\n\n");
 
+    int result = 0;
+
     pthread_t driver_thread;
 
-    if (pthread_create(&driver_thread, NULL, driver_thread_fn, NULL))
+    if (pthread_create(&driver_thread, NULL, driver_thread_fn, &device))
     {
-        fprintf(stderr, "Error creating thread\n");
-        return 1;
+        printv(">> Error creating thread\n");
+        result = EXIT_FAILURE;
     }
-
-    main_thread_fn();
-
-    printv("\n>> Main Thread Exited\n");
-
-    if (pthread_join(driver_thread, NULL))
+    else
     {
-        fprintf(stderr, "Error joining thread\n");
-        return 2;
-    }
+        main_thread_fn();
 
-    printv(">> Driver Thread Exited\n");
+        if (pthread_join(driver_thread, NULL))
+        {
+            printv(">> Error joining driver thread\n");
+            result = EXIT_FAILURE;
+        }
+    }   
 
     fsk_cleanup();
     free_rb(rb);
 
-    printv("\n>> RTL_FM FINISHED. GoodBye!\n");
+    printv(">> RTL_FM FINISHED. GoodBye!\n");
 
-    return(0);
+    return(result);
 }
