@@ -23,6 +23,8 @@ int samplerate = 38400;
 rb_info_t rb;
 RTLSDRInfo_t device;
 
+Mavg hipass_filter, lopass_filter;
+
 void printv(const char *format, ...)
 {
     va_list args;
@@ -34,11 +36,25 @@ void printv(const char *format, ...)
     va_end(args);
 }
 
+static inline void decode_sample(IQPair sample)
+{
+    if (squelch(sample, rfm_reset))
+    {
+        rfm_decode(fsk_decode(mavg_hipass(&hipass_filter, mavg_lopass(&lopass_filter, fm_demod(sample)))));
+    }
+}
+
 volatile sig_atomic_t running = 1;
+
+//#define THREADED
 
 void samplehandlerfn(IQPair sample)
 {
+    #ifdef THREADED
     rb_put(rb, sample);
+    #else
+    decode_sample(sample);
+    #endif
 }
 
 void main_thread_fn(void)
@@ -47,10 +63,9 @@ void main_thread_fn(void)
     {
         IQPair sample = rb_get(rb);
 
-        if (squelch(sample, rfm_reset))
-        {
-            rfm_decode(fsk_decode(fm_demod(sample)));
-        }
+        #ifdef THREADED
+        decode_sample(sample);
+        #endif
     }
 }
 
@@ -100,6 +115,21 @@ int main (int argc, char **argv)
 
     fsk_init(freq, samplerate, baudrate);
 
+    float fc = samplerate * 0.443 / (8 * 16); // ~= baudrate * 0.0276; Set at 8*16 symbols so that the filter is centered after the 16-symbol sync word
+    int hipass_filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
+
+    float fc2 = baudrate * 0.5;
+    int lopass_filtersize = ((float) (0.443 * (float) samplerate)) / fc2;
+
+    lopass_filtersize = (lopass_filtersize < 1) ? 1 : lopass_filtersize;
+
+    printv(">> Setting filters at '%.2fHz < signal < %.2fHz' (hipass size: %i, lopass size: %i)\n", fc, fc2, hipass_filtersize, lopass_filtersize);
+
+    printv(">> RXBw is %.1fkHz around %.4fMHz.\n", (float)samplerate/1000.0, (float)freq/1000000.0);
+
+    mavg_init(&hipass_filter, hipass_filtersize);
+    mavg_init(&lopass_filter, lopass_filtersize);
+
     int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn);
 
     if (error < 0)
@@ -128,7 +158,10 @@ int main (int argc, char **argv)
             printv(">> Error joining driver thread\n");
             result = EXIT_FAILURE;
         }
-    }   
+    }
+
+    mavg_cleanup(&hipass_filter);
+    mavg_cleanup(&lopass_filter);
 
     fsk_cleanup();
     free_rb(rb);

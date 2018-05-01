@@ -1,7 +1,8 @@
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
 
-#include "fsk.h" // for filters
+#include "mavg.h"
+extern Mavg hipass_filter;
 
 int bytesexpected = 0;
 int bitphase = -1;
@@ -115,7 +116,7 @@ void rfm_decode(uint8_t thebit) {
     {
         amble = (amble << 1) | (thebit & 0b1);
 
-        if ((amble & 0x0000FFFF) == 0x00002D4C)// detect 2 sync bytes "2D4C" = 0010'1101'0100'1100
+        if ((amble & 0x0000FFFF) == 0x00002DCA)// detect 2 sync bytes "2D4C" = 0010'1101'1100'1010
         {
             hipass_filter.hold = true;
 

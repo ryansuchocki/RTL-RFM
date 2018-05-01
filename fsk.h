@@ -7,6 +7,6 @@
     void fsk_cleanup();
     uint8_t fsk_decode(int16_t sample);
 
-    Mavg hipass_filter, lopass_filter, mavg_filter;
+    Mavg mavg_filter;
 
 #endif
