@@ -12,8 +12,6 @@ static inline int16_t abs16(int16_t value)
 // Linear approximation of atan2() in int16-space. Calculated in four quadrants.
 // This relies on the fact that |sin(x)| - |cos(x)| is vaguely linear from x = 0 to tau/4
 
-#define TAU INT16_MAX * 2
-
 static inline int16_t atan2_int16(int16_t y, int16_t x)
 {
     int16_t absx = abs16(x), absy = abs16(y);
@@ -37,25 +35,12 @@ static inline int16_t atan2_int16(int16_t y, int16_t x)
     }
 }
 
-static inline IQPair complex_conjugate(IQPair arg)
-{
-    return (IQPair) {.q=arg.q, .i=-arg.i};
-}
-
-static inline IQPair complex_multiply(IQPair arg1, IQPair arg2)
-{
-    return (IQPair)
-    {
-        .q = (arg1.q * arg2.q) - (arg1.i * arg2.i),
-        .i = (arg1.q * arg2.i) + (arg1.i * arg2.q)
-    };
-}
-
 IQPair previous = {0, 0};
 
 int16_t fm_demod(IQPair sample)
 {
-    IQPair product = complex_multiply(sample, complex_conjugate(previous));
+    //IQPair product = complex_multiply(sample, complex_conjugate(previous));
+    IQPair product = IQPAIR_PRODUCT(sample, IQPAIR_CONJUGATE(previous));
     previous = sample;
-    return -atan2_int16(product.i, product.q);
+    return -atan2_int16(product.i, product.q); // INT16_MAX / M_PI * atan2(product.i, product.q)
 }

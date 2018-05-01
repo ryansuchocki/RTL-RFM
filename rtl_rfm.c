@@ -3,7 +3,6 @@
 
 #include "rtl_rfm.h"
 
-#include "rb.h"
 #include "rtl_sdr_driver.h"
 #include "squelch.h"
 #include "fm.h"
@@ -19,8 +18,8 @@ int gain = 496; // 49.6
 int ppm = 0;
 int baudrate = 4800;
 int samplerate = 38400;
+bool lazydecimate = false;
 
-rb_info_t rb;
 RTLSDRInfo_t device;
 
 Mavg hipass_filter, lopass_filter;
@@ -36,36 +35,88 @@ void printv(const char *format, ...)
     va_end(args);
 }
 
-static inline void decode_sample(IQPair sample)
+void try_free(void *it)
 {
-    if (squelch(sample, rfm_reset))
-    {
-        rfm_decode(fsk_decode(mavg_hipass(&hipass_filter, mavg_lopass(&lopass_filter, fm_demod(sample)))));
-    }
+    if (it) free(it);
 }
 
-volatile sig_atomic_t running = 1;
+char *print_sanitize(char* buf)
+{
+    if (buf)
+    {
+        for (unsigned int i = 0; i < strlen(buf); i++)
+        {
+            uint8_t chr = buf[i];
 
-//#define THREADED
+            if (chr >= 32)
+            {
+                putchar(chr);
+            }
+            else
+            {
+                printf("[%02X]", chr);
+            }
+        }
+    }
+    
+    return buf;
+}
+
+void filter_reset(void)
+{
+    hipass_filter.hold = false;    // reset offset hold.
+}
+
+void filter_hold(void)
+{
+    hipass_filter.hold = true;
+    printv(">> GOT SYNC WORD, ");
+    float foffset = (float) hipass_filter.counthold * (float) samplerate / (float) INT16_MAX / (float) hipass_filter.size / 2.0;
+    float eppm = 1000000.0 * foffset / freq;
+    printv("(OFFSET %.0fHz = %.1f PPM)", foffset, eppm);
+}
+
+void squelch_close_cb(void)
+{
+    rfm_reset();
+    filter_reset();
+}
+
+static inline int16_t bandpass(int16_t sample)
+{
+    return mavg_hipass(&hipass_filter, mavg_lopass(&lopass_filter, sample));
+}
+
+static inline IQPair channelize(IQPair sample)
+{
+    float lo_f = 0; // in Hz
+    static int t = 0;
+    t++;
+
+    IQPair LO = {
+        .i = INT8_MAX * cos(2 * M_PI * lo_f/samplerate * (float) t),
+        .q = INT8_MAX * sin(2 * M_PI * lo_f/samplerate * (float) t)
+    };
+
+    //IQPair filteredsample = mavg_lopass(&channel_filter, mixed);
+    // need to apply filter to I and Q seperately. And decimate?
+
+    return IQPAIR_PRODUCT(sample, LO);
+}
 
 void samplehandlerfn(IQPair sample)
 {
-    #ifdef THREADED
-    rb_put(rb, sample);
-    #else
-    decode_sample(sample);
-    #endif
-}
+    IQPair channelsample = sample; //channelize(sample);
 
-void main_thread_fn(void)
-{
-    while (running)
+    if (squelch(channelsample, squelch_close_cb))
     {
-        IQPair sample = rb_get(rb);
-
-        #ifdef THREADED
-        decode_sample(sample);
-        #endif
+        try_free(
+            print_sanitize(
+                rfm_decode(
+                    fsk_decode(
+                        bandpass(
+                            fm_demod(
+                                channelsample))))));
     }
 }
 
@@ -73,15 +124,11 @@ void intHandler(int signum)
 {
     printf("\n\n>> Caught signal %d, cancelling...\n", signum);
 
-    running = 0;
     rtl_sdr_cancel(device);
-    rb_cancel(rb);
 }
 
 int main (int argc, char **argv)
 {
-    rb = new_rb(RESAMP_BUFFER_SIZE);
-
     char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
         "\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
         "Option flags:\n"
@@ -90,17 +137,19 @@ int main (int argc, char **argv)
         "  -d    Show Debug Plot\n"
         "  -f    Frequency [869412500]\n"
         "  -g    Gain [49.6]\n"
-        "  -p    PPM error\n";
+        "  -p    PPM error\n"
+        "  -l    Lazy Decimation\n";
 
     int c;
 
-    while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1)
+    while ((c = getopt(argc, argv, "hqdlf:g:p:")) != -1)
     {
         switch (c)
         {
             case 'h':   fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
             case 'q':   quiet = true;                                       break;
             case 'd':   debugplot = true;                                   break;
+            case 'l':   lazydecimate = true;                                break;
             case 'f':   freq = atoi(optarg);                                break;
             case 'g':   gain = atof(optarg) * 10;                           break;
             case 'p':   ppm = atoi(optarg);                                 break;
@@ -112,8 +161,6 @@ int main (int argc, char **argv)
     signal(SIGINT, intHandler);
 
     printv(">> STARTING RTL_RFM ...\n");
-
-    fsk_init(freq, samplerate, baudrate);
 
     float fc = samplerate * 0.443 / (8 * 16); // ~= baudrate * 0.0276; Set at 8*16 symbols so that the filter is centered after the 16-symbol sync word
     int hipass_filtersize = (0.443 * samplerate) / fc; // Number of points of mavg filter = (0.443 * Fsamplerate) / Fc
@@ -130,7 +177,10 @@ int main (int argc, char **argv)
     mavg_init(&hipass_filter, hipass_filtersize);
     mavg_init(&lopass_filter, lopass_filtersize);
 
-    int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn);
+    rfm_init(filter_hold, filter_reset);
+    fsk_init(samplerate, baudrate);
+
+    int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn, lazydecimate);
 
     if (error < 0)
     {
@@ -142,29 +192,12 @@ int main (int argc, char **argv)
 
     int result = 0;
 
-    pthread_t driver_thread;
-
-    if (pthread_create(&driver_thread, NULL, driver_thread_fn, &device))
-    {
-        printv(">> Error creating thread\n");
-        result = EXIT_FAILURE;
-    }
-    else
-    {
-        main_thread_fn();
-
-        if (pthread_join(driver_thread, NULL))
-        {
-            printv(">> Error joining driver thread\n");
-            result = EXIT_FAILURE;
-        }
-    }
+    driver_thread_fn(&device);
 
     mavg_cleanup(&hipass_filter);
     mavg_cleanup(&lopass_filter);
 
     fsk_cleanup();
-    free_rb(rb);
 
     printv(">> RTL_FM FINISHED. GoodBye!\n");
 

@@ -84,8 +84,6 @@ void rb_put(rb_info_t rb, IQPair sample)
 
 void rb_cancel(rb_info_t rb)
 {
-    pthread_mutex_lock(rb.resampled_buffer_mutex);
     pthread_cond_signal(rb.resampled_buffer_not_full);
     pthread_cond_signal(rb.resampled_buffer_not_empty);
-    pthread_mutex_unlock(rb.resampled_buffer_mutex);
 }

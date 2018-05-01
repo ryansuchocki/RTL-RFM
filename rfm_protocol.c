@@ -1,17 +1,29 @@
 #include "rtl_rfm.h"
 #include "rfm_protocol.h"
 
-#include "mavg.h"
-extern Mavg hipass_filter;
-
-int bytesexpected = 0;
-int bitphase = -1;
-
 #define CRC_INIT 0x1D0F
 #define CRC_POLY 0x1021
 #define CRC_POST 0xFFFF
+#define AMBLEMASK 0x0000FFFF
+#define AMBLE 0x00002DCA
+
 uint16_t crc = CRC_INIT;
 uint16_t thecrc = 0;
+CB_VOID open_cb;
+CB_VOID close_cb;
+
+uint8_t packet_buffer[256];
+uint8_t packet_bi = 0;
+int bytesexpected = 0;
+int bitphase = -1;
+uint8_t thisbyte = 0;
+uint32_t amble = 0;
+
+void rfm_init(CB_VOID o, CB_VOID c)
+{
+    open_cb = o;
+    close_cb = c;
+}
 
 void docrc(uint8_t thebyte)
 {
@@ -23,47 +35,15 @@ void docrc(uint8_t thebyte)
     }
 }
 
-uint8_t packet_buffer[256];
-uint8_t packet_bi = 0;
-
-void print_sanitize(bool force, uint8_t buf[], uint8_t bufi)
+char *process_byte(uint8_t thebyte, CB_VOID close_cb)
 {
-    for (int i = 0; i < bufi; i++)
-    {
-        uint8_t chr = buf[i];
+    char *result = NULL;
 
-        if (force)
-        {
-            if (chr >= 32)
-            {
-                putchar(chr);
-            }
-            else
-            {
-                printf("[%02X]", chr);
-            }
-        }
-        else
-        {
-            if (chr >= 32)
-            {
-                printv("%c", chr);
-            }
-            else
-            {
-                printv("[%02X]", chr);
-            }
-        }
-    }
-}
-
-void process_byte(uint8_t thebyte)
-{    
     if (bytesexpected < 0) //expecting length byte!
     { 
         bytesexpected = thebyte + 2; // +2 for crc
         docrc(thebyte);
-        return;
+        return NULL;
     }
 
     if (bytesexpected > 0)
@@ -84,46 +64,37 @@ void process_byte(uint8_t thebyte)
 
     if (bytesexpected == 0)
     {
+        result = malloc(sizeof(char) * (packet_bi + 1));
+        memcpy(result, packet_buffer, packet_bi);
+        result[packet_bi] = 0;
+
         crc ^= CRC_POST;
         if (crc == thecrc)
         {
-            printv("CRC OK, \t<");
-            print_sanitize(true, packet_buffer, packet_bi);
-            printv(">");
-            printf("\n");
+            printv("CRC OK\n");
         } else {
-            printv("CRC FAIL! [%02X] [%02X] \t<", crc, thecrc);
-            print_sanitize(false, packet_buffer, packet_bi);
-            printv(">\n");
+            printv("CRC FAIL! [%02X] [%02X]\n", crc, thecrc);
         }
         
         bitphase = -1; // search for new preamble
 
-        hipass_filter.hold = false; // reset offset hold.
+        close_cb(); // reset offset hold.
     }
+
+    return result;
 }
 
-uint8_t thisbyte = 0;
-uint32_t amble = 0;
-
-extern int samplerate;
-extern int freq;
-
-void rfm_decode(uint8_t thebit) {
-    if (thebit > 1) return;
+char *rfm_decode(uint8_t thebit)
+{
+    if (thebit > 1) return NULL;
 
     if (bitphase < 0)
     {
         amble = (amble << 1) | (thebit & 0b1);
 
-        if ((amble & 0x0000FFFF) == 0x00002DCA)// detect 2 sync bytes "2D4C" = 0010'1101'1100'1010
+        if ((amble & AMBLEMASK) == AMBLE)// detect 2 sync bytes "2D4C" = 0010'1101'1100'1010
         {
-            hipass_filter.hold = true;
-
-            printv(">> GOT SYNC WORD, ");
-            float foffset = (float) hipass_filter.counthold * (float) samplerate / (float) INT16_MAX / (float) hipass_filter.size / 2.0;
-            float eppm = 1000000.0 * foffset / freq;
-            printv("(OFFSET %.0fHz = %.1f PPM)", foffset, eppm);
+            open_cb();
 
             packet_bi = 0;      // reset the packet buffer
             bitphase = 0;       // lock to current bit phase
@@ -139,16 +110,18 @@ void rfm_decode(uint8_t thebit) {
         if (bitphase > 7) 
         {
             bitphase = 0;
-            process_byte(thisbyte);          
+            return process_byte(thisbyte, close_cb);          
         }
     }
+
+    return NULL;
 }
 
 void rfm_reset()
 {
     bytesexpected = 0;      // Length byte not expected yet.
     bitphase = -1;          // search for new preamble
-    hipass_filter.hold = false;    // reset offset hold.
     thisbyte = 0;
     amble = 0;
+    packet_bi = 0;
 }

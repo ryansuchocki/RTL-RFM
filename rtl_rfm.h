@@ -21,15 +21,9 @@
         #include <signal.h>
         #include <stdarg.h>
 
-        #include <pthread.h>
+        #include "IQ16.h"
 
     // Project-wide globals:
-
-    typedef struct IQPair
-    {
-        int16_t i;
-        int16_t q;
-    } IQPair;
 
     void printv(const char *format, ...);
 

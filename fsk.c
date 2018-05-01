@@ -5,7 +5,7 @@
 
 int windowsize;
 
-void fsk_init(int freq, int samplerate, int baudrate)
+void fsk_init(int samplerate, int baudrate)
 {
     windowsize = samplerate / baudrate;
     mavg_init(&mavg_filter, windowsize);
@@ -18,28 +18,19 @@ void fsk_cleanup()
 
 #define SCOPEWIDTH 128
 
-void print_waveform(int16_t unfiltered, int16_t sample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared)
+void print_waveform(int16_t sample, int16_t prevsample, uint8_t thebit, int clk, int32_t magnitude_squared)
 {
-    int x = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * unfiltered) / (INT16_MAX);
-    x = (x < 0) ? 0 : (x > SCOPEWIDTH) ? SCOPEWIDTH : x;
-
     int y = (SCOPEWIDTH/2) + ((SCOPEWIDTH/2) * sample) / (INT16_MAX);
     y = (y < 0) ? 0 : (y > SCOPEWIDTH) ? SCOPEWIDTH : y;
 
     for (int i = 0; i < SCOPEWIDTH; i++)
     {
         if (i == y) putchar('X');
-        else if (i == x) putchar('-');
         else if (i == (SCOPEWIDTH/2)) putchar('|');
         else putchar(' ');
     }
 
-    // for (int i = 0; i < x; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
-    // putchar('x');
-    // for (int i = x+1; i < SCOPEWIDTH; i++) putchar(i == (SCOPEWIDTH/2) ? '.' : ' ');
-
     printf("%.2f", sqrt(magnitude_squared));
-    //putchar('\t');
 
     if ((sample < 0 && prevsample >= 0) || (sample > 0 && prevsample <= 0))
     {
@@ -77,7 +68,7 @@ uint8_t fsk_decode(int16_t sample)
     uint8_t thebit = (mavg_count(&mavg_filter, sample) > 0) ? 1 : 0;
 
     // Zero-Crossing Detector for phase correction:
-    if ((sample < 0 && prevsample >= 0) || (sample > 0 && prevsample <= 0))
+    if ((sample < 0 && prevsample >= 0) || (sample >= 0 && prevsample < 0))
     {
         if (clk > 0 && clk <= (windowsize/2))
         {
@@ -89,7 +80,7 @@ uint8_t fsk_decode(int16_t sample)
         } // else clock locked on! Nothing to do...
     }
 
-    if (debugplot) print_waveform(sample, sample, prevsample, thebit, clk, magnitude_squared);
+    if (debugplot) print_waveform(sample, prevsample, thebit, clk, magnitude_squared);
 
     prevsample = sample; // record previous sample for the purposes of zero-crossing detection
 
