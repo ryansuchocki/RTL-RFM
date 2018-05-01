@@ -4,6 +4,7 @@
     // Project-wide helper macros:
 
     #define UNUSED(x) (void)(x)
+    #define TRY_FREE(it) { if (it) free(it); }
 
     // Project-wide includes:
 

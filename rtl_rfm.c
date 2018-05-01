@@ -34,11 +34,6 @@ void printv(const char *format, ...)
     va_end(args);
 }
 
-void try_free(void *it)
-{
-    if (it) free(it);
-}
-
 char *print_sanitize(char* buf)
 {
     if (buf)
@@ -107,7 +102,7 @@ void channelhandler(IQPair sample)
 {
     if (squelch(sample, squelch_close_cb))
     {
-        try_free(
+        TRY_FREE(
             print_sanitize(
                 rfm_decode(
                     fsk_decode(
@@ -120,7 +115,8 @@ void channelhandler(IQPair sample)
 IQDecimator channel1dec = {.acci=0, .accq=0, .count=0, .downsample=4, .samplehandler=channelhandler};
 
 void samplehandlerfn(IQPair sample)
-{    
+{
+    // Do this for each channel:
     decimate(&channel1dec, channelize(sample));    
 }
 
