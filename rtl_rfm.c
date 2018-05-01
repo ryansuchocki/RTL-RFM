@@ -13,12 +13,11 @@
 
 bool quiet = false;
 bool debugplot = false;
-int freq = 869412500;
+int freq = 869412500 - 9600;
 int gain = 496; // 49.6
 int ppm = 0;
 int baudrate = 4800;
-int samplerate = 38400;
-bool lazydecimate = false;
+int samplerate = 38400*4;
 
 RTLSDRInfo_t device;
 
@@ -89,7 +88,7 @@ static inline int16_t bandpass(int16_t sample)
 
 static inline IQPair channelize(IQPair sample)
 {
-    float lo_f = 0; // in Hz
+    float lo_f = 9600; // in Hz
     static int t = 0;
     t++;
 
@@ -104,11 +103,9 @@ static inline IQPair channelize(IQPair sample)
     return IQPAIR_PRODUCT(sample, LO);
 }
 
-void samplehandlerfn(IQPair sample)
+void channelhandler(IQPair sample)
 {
-    IQPair channelsample = sample; //channelize(sample);
-
-    if (squelch(channelsample, squelch_close_cb))
+    if (squelch(sample, squelch_close_cb))
     {
         try_free(
             print_sanitize(
@@ -116,8 +113,15 @@ void samplehandlerfn(IQPair sample)
                     fsk_decode(
                         bandpass(
                             fm_demod(
-                                channelsample))))));
+                                sample))))));
     }
+}
+
+IQDecimator channel1dec = {.acci=0, .accq=0, .count=0, .downsample=4, .samplehandler=channelhandler};
+
+void samplehandlerfn(IQPair sample)
+{    
+    decimate(&channel1dec, channelize(sample));    
 }
 
 void intHandler(int signum)
@@ -137,19 +141,17 @@ int main (int argc, char **argv)
         "  -d    Show Debug Plot\n"
         "  -f    Frequency [869412500]\n"
         "  -g    Gain [49.6]\n"
-        "  -p    PPM error\n"
-        "  -l    Lazy Decimation\n";
+        "  -p    PPM error\n";
 
     int c;
 
-    while ((c = getopt(argc, argv, "hqdlf:g:p:")) != -1)
+    while ((c = getopt(argc, argv, "hqdf:g:p:")) != -1)
     {
         switch (c)
         {
             case 'h':   fprintf(stdout, "%s", helpmsg); exit(EXIT_SUCCESS); break;
             case 'q':   quiet = true;                                       break;
             case 'd':   debugplot = true;                                   break;
-            case 'l':   lazydecimate = true;                                break;
             case 'f':   freq = atoi(optarg);                                break;
             case 'g':   gain = atof(optarg) * 10;                           break;
             case 'p':   ppm = atoi(optarg);                                 break;
@@ -178,9 +180,9 @@ int main (int argc, char **argv)
     mavg_init(&lopass_filter, lopass_filtersize);
 
     rfm_init(filter_hold, filter_reset);
-    fsk_init(samplerate, baudrate);
+    fsk_init(samplerate/4, baudrate);
 
-    int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn, lazydecimate);
+    int error = hw_init(&device, freq, samplerate, gain, ppm, samplehandlerfn);
 
     if (error < 0)
     {
