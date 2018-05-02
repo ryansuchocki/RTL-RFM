@@ -11,6 +11,8 @@
         int16_t q;
     } IQPair;
 
+    #define IQPAIR_SCALAR_QUOTIENT(x, y) ((IQPair) {.i=x.i/y, .q=x.q/y})
+
     #ifdef CHECKNOMACRO
         IQPair complex_conjugate(IQPair arg);
         IQPair complex_product(IQPair arg1, IQPair arg2);

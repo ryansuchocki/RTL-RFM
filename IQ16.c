@@ -9,9 +9,9 @@ void decimate(IQDecimator *d, IQPair sample)
     if (d->count == d->downsample)
     {
         d->samplehandler((IQPair) {
-            .i = d->acci / d->downsample - 128,
-            .q = d->accq / d->downsample - 128
-        }); // divide and convert to signed);
+            .i = d->acci / d->downsample,
+            .q = d->accq / d->downsample
+        }); // divide and convert to signed
 
         d->count = d->acci = d->accq = 0;
     }
