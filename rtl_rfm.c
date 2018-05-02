@@ -98,16 +98,45 @@ void channelhandler(IQPair sample)
 
 IQDecimator channel1dec = {.acci=0, .accq=0, .count=0, .downsample=2, .samplehandler=channelhandler};
 
+typedef struct Oscillator_s
+{
+    int steps;
+    int phase;
+    IQPair *lut;
+} Oscillator;
+
+Oscillator *osc_init(int samplerate, int lo_freq)
+{
+    Oscillator *result = malloc(sizeof(Oscillator));
+
+    result->steps = samplerate/lo_freq;
+    result->phase = 0;
+
+    result->lut = malloc(sizeof(IQPair) * abs(result->steps));
+
+    for (int t = 0; t < abs(result->steps); t++)
+    {
+        result->lut[t].i = INT8_MAX * cos(2 * M_PI * (float) t / result->steps);
+        result->lut[t].q = INT8_MAX * sin(2 * M_PI * (float) t / result->steps);
+    }
+
+    return result;
+}
+
+IQPair osc(Oscillator *o)
+{
+    IQPair result = o->lut[o->phase];
+
+    o->phase = (o->phase + 1) % (abs(o->steps));
+
+    return result;
+}
+
+Oscillator *channel1_lo;
+
 static inline void channelize(IQPair sample)
 {
-    float lo_f = -10000; // in Hz
-    static int t = 0;
-    t++;
-
-    IQPair LO = {
-        .i = INT8_MAX * cos(2 * M_PI * lo_f * (float) t / samplerate),
-        .q = INT8_MAX * sin(2 * M_PI * lo_f * (float) t / samplerate)
-    };
+    IQPair LO = osc(channel1_lo);
 
     decimate(&channel1dec, IQPAIR_SCALAR_QUOTIENT(IQPAIR_PRODUCT(sample, LO), INT8_MAX));
 }
@@ -132,6 +161,11 @@ void intHandler(int signum)
 
 int main (int argc, char **argv)
 {
+    channel1_lo = osc_init(samplerate, -10000);
+
+
+
+
     char *helpmsg = "RTL_RFM, (C) Ryan Suchocki\n"
         "\nUsage: rtl_rfm [-hsqd] [-f freq] [-g gain] [-p error] \n\n"
         "Option flags:\n"
