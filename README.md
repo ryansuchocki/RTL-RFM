@@ -1,8 +1,3 @@
-<a href="https://scan.coverity.com/projects/ryansuchocki-rtl-rfm">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/16120/badge.svg"/>
-</a>
-
 RTL-RFM
 =======
 FSK/GFSK Decoder for RTL-SDR
